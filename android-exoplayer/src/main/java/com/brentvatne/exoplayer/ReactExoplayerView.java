@@ -240,10 +240,7 @@ class ReactExoplayerView extends FrameLayout implements
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        /* We want to be able to continue playing audio when switching tabs.
-         * Leave this here in case it causes issues.
-         */
-        // stopPlayback();
+        stopPlayback();
     }
 
     // LifecycleEventListener implementation
@@ -389,6 +386,17 @@ class ReactExoplayerView extends FrameLayout implements
     }
 
     private void initializePlayer() {
+        if (player != null) {
+            /**
+             * this is needed in order to only have one active instance at a time.
+             * otherwise, the codec fails to initialise if there are multiple videos
+             * with different resolutions being loaded at the same time, which will
+             * always happen in our case.
+             */
+            player.seekTo(0);
+            stopPlayback();
+        }
+
         ReactExoplayerView self = this;
         // This ensures all props have been settled, to avoid async racing conditions.
         new Handler().postDelayed(new Runnable() {
