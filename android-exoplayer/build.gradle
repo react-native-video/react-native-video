@@ -31,6 +31,7 @@ dependencies {
     implementation('com.google.android.exoplayer:exoplayer:2.13.3') {
         exclude group: 'com.android.support'
     }
+    implementation('com.google.android.exoplayer:extension-mediasession:2.13.3')
 
     // All support libs must use the same version
     implementation "androidx.annotation:annotation:1.1.0"

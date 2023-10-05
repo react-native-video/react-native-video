@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 5.2.2
+- Add basic support for Android Media Sessions on ExoPlayer [#3080](https://github.com/react-native-video/react-native-video/pull/3080)
+
 ### Version 5.2.0
 
 - Fix for tvOS native audio menu language selector

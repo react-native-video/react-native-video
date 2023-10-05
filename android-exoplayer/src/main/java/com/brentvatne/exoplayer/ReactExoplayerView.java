@@ -7,6 +7,8 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +45,8 @@ import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.metadata.Metadata;
@@ -109,6 +113,9 @@ class ReactExoplayerView extends FrameLayout implements
 
     private ExoPlayerView exoPlayerView;
 
+    private MediaSessionCompat mediaSession;
+    private MediaSessionConnector mediaSessionConnector;
+
     private DataSource.Factory mediaDataSourceFactory;
     private SimpleExoPlayer player;
     private DefaultTrackSelector trackSelector;
@@ -157,6 +164,8 @@ class ReactExoplayerView extends FrameLayout implements
     private String drmLicenseUrl = null;
     private String[] drmLicenseHeader = null;
     private boolean controls;
+    private boolean enableMediaSession = false;
+    private MediaDescriptionCompat.Builder mediaSessionMetadata = new MediaDescriptionCompat.Builder();
     // \ End props
 
     // React
@@ -425,6 +434,19 @@ class ReactExoplayerView extends FrameLayout implements
 
                     PlaybackParameters params = new PlaybackParameters(rate, 1f);
                     player.setPlaybackParameters(params);
+
+                    if (enableMediaSession) {
+                        mediaSession = new MediaSessionCompat(getContext(), TAG);
+                        mediaSessionConnector = new MediaSessionConnector(mediaSession);
+                        mediaSessionConnector.setPlayer(player);
+                        mediaSessionConnector.setQueueNavigator(new TimelineQueueNavigator(mediaSession) {
+                            @Override
+                            public MediaDescriptionCompat getMediaDescription(Player player, int windowIndex) {
+                            return mediaSessionMetadata.build();
+                            }
+                        });
+                        mediaSession.setActive(true);
+                    }
                 }
                 if (playerNeedsSource && srcUri != null) {
                     exoPlayerView.invalidateAspectRatio();
@@ -569,6 +591,10 @@ class ReactExoplayerView extends FrameLayout implements
             player.removeMetadataOutput(this);
             trackSelector = null;
             player = null;
+        }
+        if (mediaSession != null) {
+          mediaSession.setActive(false);
+          mediaSession.release();
         }
         progressHandler.removeMessages(SHOW_PROGRESS);
         themedReactContext.removeLifecycleEventListener(this);
@@ -762,6 +788,10 @@ class ReactExoplayerView extends FrameLayout implements
                     playerControlView.show();
                 }
                 setKeepScreenOn(preventsDisplaySleepDuringVideoPlayback);
+
+                if (playWhenReady == isPaused) {
+                  eventEmitter.playbackRateChange(playWhenReady ? 1 : 0);
+                }
                 break;
             case Player.STATE_ENDED:
                 text += "ended";
@@ -1291,6 +1321,15 @@ class ReactExoplayerView extends FrameLayout implements
     public void setDisableFocus(boolean disableFocus) {
         this.disableFocus = disableFocus;
     }
+
+    public void setEnableMediaSession(boolean enableMediaSession) {
+      this.enableMediaSession = enableMediaSession;
+    }
+
+    public void setMediaSessionTitle(String title) { this.mediaSessionMetadata.setTitle((title)); }
+    public void setMediaSessionSubtitle(String subtitle) { this.mediaSessionMetadata.setSubtitle((subtitle)); }
+    public void setMediaSessionDescription(String description) { this.mediaSessionMetadata.setDescription((description)); }
+    public void setMediaSessionImage(String uri) { this.mediaSessionMetadata.setMediaUri((Uri.parse(uri))); }
 
     public void setFullscreen(boolean fullscreen) {
         if (fullscreen == isFullscreen) {

@@ -437,6 +437,14 @@ To setup DRM please follow [this guide](./DRM.md)
 
 Platforms: Android Exoplayer, iOS
 
+#### enableMediaSession
+Controls whether the ExoPlayer creates an Android Media Session. This enables external controls such as hardware buttons (eg. Play/Pause on a tv remote), or Google Assistant
+
+* **false (default)** - No Media Session
+* **true** - Create Media Session
+
+Platforms: Android ExoPlayer
+
 #### filter
 Add video filter
 * **FilterType.NONE (default)** - No Filter
@@ -546,6 +554,18 @@ maxBitRate={2000000} // 2 megabits
 ```
 
 Platforms: Android ExoPlayer, iOS
+
+#### mediaSessionMetadata
+If `enableMediaSession` is true, this can be used to pass additional metadata to the session. This metadata can be displayed to the user by Google (eg. Asking Google Assistant "What's Playing?")
+
+Supports `title`, `description`, `subtitle`, and `imageUri`
+eg.
+
+```js
+mediaSessionMetadata={{ title: "Title", subtitle: "Subtitle", description: "Description", imageUri: "https://image.png" }}
+```
+
+Platforms: Android ExoPlayer
 
 #### minLoadRetryCount
 Sets the minimum number of times to retry loading data before failing and reporting an error to the application. Useful to recover from transient internet failures.
