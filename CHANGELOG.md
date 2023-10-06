@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 5.2.2
+- Fix: improve looping on iOS [#2926](https://github.com/react-native-video/react-native-video/pull/2926)
+
 ### Version 5.2.0
 
 - Fix for tvOS native audio menu language selector
