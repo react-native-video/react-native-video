@@ -7,6 +7,7 @@
 - iOS rate is reset to 1.0 after play/pause [#2167] (https://github.com/react-native-video/react-native-video/pull/2167)
 - Upgrade ExoPlayer to 2.13.2 [#2317] (https://github.com/react-native-video/react-native-video/pull/2317)
 - Fix AudioFocus pausing video when attempting to play [#2311] (https://github.com/react-native-video/react-native-video/pull/2311)
+- Fix back gesture handler on Android Video Player [#2896] (https://github.com/react-native-video/react-native-video/pull/2896)
 
 ### Version 5.1.0-alpha9
 
