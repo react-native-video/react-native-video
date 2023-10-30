@@ -10,6 +10,7 @@
 - Android: ensure audio volume is changed in UI thread [3292](https://github.com/react-native-video/react-native-video/pull/3292)
 - Android: multiple internal refactor and switch to kotlin
 - Android: refactor log management and add an option to increase log verbosity [#3277](https://github.com/react-native-video/react-native-video/pull/3277)
+- Android: updated track selection [#3312](https://github.com/react-native-video/react-native-video/issues/3312)
 - iOS: Fix audio session category when not using the audioOutput prop
 - iOS: implement onPlaybackStateChanged callback [#3307](https://github.com/react-native-video/react-native-video/pull/3307)
 - iOS: remove false calls at onPlaybackRateChange [#3306](https://github.com/react-native-video/react-native-video/pull/3306)
