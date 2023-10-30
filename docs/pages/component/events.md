@@ -481,13 +481,13 @@ Callback function that is called when video tracks change
 
 Payload:
 
-Property | Type | Description
---- | --- | ---
-trackId | number | Internal track ID
-codecs | string | MimeType of codec used for this track
-width | number | Track width
-height | number | Track height
-bitrate | number | Bitrate in bps
+Property | Type    | Description
+--- |---------| ---
+trackId | string  | Internal track ID
+codecs | string  | MimeType of codec used for this track
+width | number  | Track width
+height | number  | Track height
+bitrate | number  | Bitrate in bps
 selected | boolean | true if track is selected for playing
 
 
@@ -496,7 +496,7 @@ Example:
 {
   videoTracks: [
     {
-      trackId: 0,
+      trackId: '0',
       codecs: 'video/mp4',
       width: 1920,
       height: 1080,
