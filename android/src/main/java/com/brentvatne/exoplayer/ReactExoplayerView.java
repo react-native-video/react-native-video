@@ -87,6 +87,7 @@ import androidx.media3.extractor.metadata.id3.Id3Frame;
 import androidx.media3.extractor.metadata.id3.TextInformationFrame;
 import androidx.media3.ui.LegacyPlayerControlView;
 
+import com.brentvatne.common.API.ProgressData;
 import com.brentvatne.common.API.ResizeMode;
 import com.brentvatne.common.API.SubtitleStyle;
 import com.brentvatne.common.API.TimedMetadata;
@@ -174,7 +175,6 @@ public class ReactExoplayerView extends FrameLayout implements
     private float audioVolume = 1f;
     private int minLoadRetryCount = 3;
     private int maxBitRate = 0;
-    private long seekTime = C.TIME_UNSET;
     private boolean hasDrmFailed = false;
     private boolean isUsingContentResolution = false;
     private boolean selectTrackWhenReady = false;
@@ -231,6 +231,94 @@ public class ReactExoplayerView extends FrameLayout implements
     private long lastBufferDuration = -1;
     private long lastDuration = -1;
 
+
+    // Seek handling
+    private long seekTime = C.TIME_UNSET;
+    private long nextSeekTime = C.TIME_UNSET;
+    private boolean waitForDiscontinuity = false;
+    private boolean waitForSeekProcessed = false;
+    private boolean waitForPlayWhenReady = false;
+    private boolean initialSeekInProgress = false;
+
+    public ProgressData getProgressData() {
+        ProgressData data = new ProgressData();
+        data.setPosition(getCurrentPosition());
+        data.setOnLivePoint(isOnLivePoint());
+        long bufferedDuration = data.getBufferedDuration();
+        if (bufferedDuration < 0) {
+            bufferedDuration = 0;
+        }
+        data.setBufferedDuration(bufferedDuration);
+        long duration = getDuration();
+        if (duration < 0) {
+            duration = 0;
+        }
+        data.setDuration(duration);
+        return data;
+    }
+
+    public boolean isOnLivePoint() {
+        if (player == null || !isOnLivePlaylist())
+            return false;
+
+        final Timeline.Window window = new Timeline.Window();
+        Timeline timeline = player.getCurrentTimeline();
+        if (timeline.isEmpty()) {
+            return false;
+        }
+        timeline.getWindow(player.getCurrentWindowIndex(), window);
+        long offsetFromDefaultPositionMs = window.getDefaultPositionMs() - player.getCurrentPosition();
+        if (window.getDefaultPositionMs() != 0 && offsetFromDefaultPositionMs < 7000) {
+            return true;
+        }
+        return false;
+    }
+
+    public long getBufferedDuration() {
+        if (player == null)
+            return 0;
+        if (isOnLivePlaylist()) {
+            return getDuration();
+        }
+        return player.getBufferedPercentage() * player.getDuration() / 100;
+    }
+
+    boolean isOnLivePlaylist() {
+        if (player != null) {
+            return player.isCurrentMediaItemLive();
+        }
+        return false;
+    }
+
+    public long getCurrentPosition() {
+        DebugLog.checkUIThread(TAG, "position");
+
+        if (player == null)
+            return 0;
+        if (isOnLivePlaylist()) {
+            // TODO on exoplayer 2.13 there is a new api getCurrentLiveOffset To be integrated once this version available
+            if (isOnLivePoint()) {
+                return player.getDuration();
+            } else {
+                return player.getCurrentPosition();
+            }
+        }
+        if (nextSeekTime != C.TIME_UNSET) {
+            // multiple seek in progress
+            return nextSeekTime;
+        } else if (seekTime != C.TIME_UNSET) {
+            // We are seeking
+            return seekTime;
+        }
+        return player.getCurrentPosition();
+    }
+
+    public long getDuration() {
+        if (player == null)
+            return 0;
+        return player.getDuration();
+    }
+
     private final Handler progressHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -250,7 +338,8 @@ public class ReactExoplayerView extends FrameLayout implements
                             lastPos = pos;
                             lastBufferDuration = bufferedDuration;
                             lastDuration = duration;
-                            eventEmitter.progressChanged(pos, bufferedDuration, player.getDuration(), getPositionInFirstPeriodMsForCurrentWindow(pos));
+                            ProgressData data = getProgressData();
+                            eventEmitter.progressChanged(lastPos, lastBufferDuration, lastBufferDuration, lastDuration);
                         }
                         msg = obtainMessage(SHOW_PROGRESS);
                         sendMessageDelayed(msg, Math.round(mProgressUpdateInterval));
@@ -698,11 +787,32 @@ public class ReactExoplayerView extends FrameLayout implements
             }
         }
 
-        boolean haveResumePosition = resumeWindow != C.INDEX_UNSET;
-        if (haveResumePosition) {
-            player.seekTo(resumeWindow, resumePosition);
+        seekTime = C.TIME_UNSET;
+        nextSeekTime = C.TIME_UNSET;
+        waitForSeekProcessed = false;
+        waitForDiscontinuity = false;
+        waitForPlayWhenReady = false;
+        initialSeekInProgress = false;
+
+        boolean needInitialSeek = false;
+
+        long startPosition = 0; // FIXME genericPlayerView.getStartPosition();
+        if (startPosition >= 0 || resumeWindow != C.INDEX_UNSET) {
+            needInitialSeek = true;
         }
-        player.prepare(mediaSource, !haveResumePosition, false);
+        loadVideoStarted = true;
+        DebugLog.d(TAG, "player initialized");
+        if (needInitialSeek) {
+            boolean haveResumePosition = startPosition >= 0;
+            if (haveResumePosition) {
+                DebugLog.d(TAG, "resume position at " + startPosition);
+                seekTo(startPosition);
+                initialSeekInProgress = true;
+            }
+        }
+        player.prepare();
+        player.setMediaSource(mediaSource);
+
         playerNeedsSource = false;
 
         reLayout(exoPlayerView);
@@ -1068,6 +1178,10 @@ public class ReactExoplayerView extends FrameLayout implements
             boolean playWhenReady = player.getPlayWhenReady();
             String text = "onStateChanged: playWhenReady=" + playWhenReady + ", playbackState=";
             eventEmitter.playbackRateChange(playWhenReady && playbackState == ExoPlayer.STATE_READY ? 1.0f : 0.0f);
+            if (playWhenReady && playbackState == Player.STATE_READY) {
+                waitForPlayWhenReady = false;
+                tryNotifyEndOfSeek();
+            }
             switch (playbackState) {
                 case Player.STATE_IDLE:
                     text += "idle";
@@ -1369,6 +1483,9 @@ public class ReactExoplayerView extends FrameLayout implements
         if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION
                 && player.getRepeatMode() == Player.REPEAT_MODE_ONE) {
             eventEmitter.end();
+        } else if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+            waitForDiscontinuity = false;
+            tryNotifyEndOfSeek();
         }
     }
 
@@ -1861,9 +1978,46 @@ public class ReactExoplayerView extends FrameLayout implements
     }
 
     public void seekTo(long positionMs) {
-        if (player != null) {
+        if (player != null && !waitForDiscontinuity && !waitForSeekProcessed && !waitForPlayWhenReady) {
+            seekTime = positionMs;
+            waitForDiscontinuity = true;
+            waitForSeekProcessed = true;
+            waitForPlayWhenReady = true;
             player.seekTo(positionMs);
-            eventEmitter.seek(player.getCurrentPosition(), positionMs);
+        } else {
+            nextSeekTime = positionMs;
+            DebugLog.d(TAG, "don't seek now : nextSeekTime " + nextSeekTime + "ms");
+        }
+    }
+
+    void tryNotifyEndOfSeek() {
+        if (!waitForDiscontinuity && !waitForSeekProcessed && !waitForPlayWhenReady && seekTime != C.TIME_UNSET) {
+            long saveSeekTime = seekTime;
+            seekTime = C.TIME_UNSET;
+            if (nextSeekTime != C.TIME_UNSET) {
+                DebugLog.d(TAG, "seek buffered " + nextSeekTime);
+                seekTo(nextSeekTime);
+                nextSeekTime = C.TIME_UNSET;
+            } else if (player != null) {
+                DebugLog.d(TAG, "seek finish " + saveSeekTime + "ms");
+                eventEmitter.seek(player.getCurrentPosition(), saveSeekTime);
+            }
+        }
+    }
+
+    // Seeks are processed without delay. Listen to onPositionDiscontinuity(Player.PositionInfo, Player.PositionInfo, int) with reason DISCONTINUITY_REASON_SEEK instead.
+
+    @Override
+    public void onSeekProcessed() {
+        if (player != null) {
+            waitForSeekProcessed = false;
+            tryNotifyEndOfSeek();
+            if (initialSeekInProgress) {
+                initialSeekInProgress = false;
+                player.setPlayWhenReady(!isPaused);
+                // onStartPlayback();
+                videoLoaded();
+            }
         }
     }
 

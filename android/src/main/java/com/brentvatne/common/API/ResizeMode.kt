@@ -1,8 +1,6 @@
 package com.brentvatne.common.API
 
 import androidx.annotation.IntDef
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 
 internal object ResizeMode {
     /**
@@ -29,20 +27,8 @@ internal object ResizeMode {
      * Keeps the aspect ratio but takes up the view's size.
      */
     const val RESIZE_MODE_CENTER_CROP = 4
-    @JvmStatic
-    @Mode
-    fun toResizeMode(ordinal: Int): Int {
-        return when (ordinal) {
-            RESIZE_MODE_FIXED_WIDTH -> RESIZE_MODE_FIXED_WIDTH
-            RESIZE_MODE_FIXED_HEIGHT -> RESIZE_MODE_FIXED_HEIGHT
-            RESIZE_MODE_FILL -> RESIZE_MODE_FILL
-            RESIZE_MODE_CENTER_CROP -> RESIZE_MODE_CENTER_CROP
-            RESIZE_MODE_FIT -> RESIZE_MODE_FIT
-            else -> RESIZE_MODE_FIT
-        }
-    }
 
-    @Retention(RetentionPolicy.SOURCE)
+    @Retention(AnnotationRetention.SOURCE)
     @IntDef(
         RESIZE_MODE_FIT,
         RESIZE_MODE_FIXED_WIDTH,

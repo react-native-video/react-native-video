@@ -7,6 +7,7 @@ import android.view.View;
 import com.brentvatne.common.API.TimedMetadata;
 import com.brentvatne.common.API.Track;
 import com.brentvatne.common.API.VideoTrack;
+import com.brentvatne.common.toolbox.DebugLog;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 public class VideoEventEmitter {
 
     private final RCTEventEmitter eventEmitter;
+
+    private final String TAG = "VideoEventEmitter";
 
     private int viewId = View.NO_ID;
 
@@ -416,11 +419,11 @@ public class VideoEventEmitter {
     public void receiveAdEvent(String event) {
         WritableMap map = Arguments.createMap();
         map.putString("event", event);
-
         receiveEvent(EVENT_ON_RECEIVE_AD_EVENT, map);
     }
 
     private void receiveEvent(@VideoEvents String type, WritableMap event) {
+        DebugLog.d(TAG,"send event viewId: " + viewId + " type: " + type + " " + (event == null ? "" : event.toString()) );
         eventEmitter.receiveEvent(viewId, type, event);
     }
 }
