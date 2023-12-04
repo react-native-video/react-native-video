@@ -205,7 +205,7 @@ export type OnTextTracksData = Readonly<{
 export type OnVideoTracksData = Readonly<{
   videoTracks: ReadonlyArray<
     Readonly<{
-      trackId: number;
+      trackId: string;
       codecs?: string;
       width?: number;
       height?: number;

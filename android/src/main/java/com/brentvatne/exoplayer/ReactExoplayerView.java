@@ -373,7 +373,7 @@ public class ReactExoplayerView extends FrameLayout implements
                 Format videoFormat = player.getVideoFormat();
                 int width = videoFormat != null ? videoFormat.width : 0;
                 int height = videoFormat != null ? videoFormat.height : 0;
-                String trackId = videoFormat != null ? videoFormat.id : "-1";
+                String trackId = videoFormat != null ? String.valueOf(videoFormat.id) : "-1";
                 eventEmitter.bandwidthReport(bitrate, height, width, trackId);
             }
         }
@@ -1160,7 +1160,7 @@ public class ReactExoplayerView extends FrameLayout implements
             Format videoFormat = player.getVideoFormat();
             int width = videoFormat != null ? videoFormat.width : 0;
             int height = videoFormat != null ? videoFormat.height : 0;
-            String trackId = videoFormat != null ? videoFormat.id : "-1";
+            String trackId = videoFormat != null ? String.valueOf(videoFormat.id) : "-1";
 
             // Properties that must be accessed on the main thread
             long duration = player.getDuration();
@@ -1210,14 +1210,25 @@ public class ReactExoplayerView extends FrameLayout implements
         }
         TrackGroupArray groups = info.getTrackGroups(index);
         TrackSelectionArray selectionArray = player.getCurrentTrackSelections();
-        TrackSelection selection = selectionArray.get( C.TRACK_TYPE_AUDIO );
+        TrackSelection selection = selectionArray.get(C.TRACK_TYPE_AUDIO);
 
         for (int i = 0; i < groups.length; ++i) {
             TrackGroup group = groups.get(i);
-            Format format = group.getFormat(0);
-            Track audioTrack = exoplayerTrackToGenericTrack(format, i, selection, group);
-            audioTrack.setBitrate(format.bitrate == Format.NO_VALUE ? 0 : format.bitrate);
-            audioTracks.add(audioTrack);
+            int supportedTrackIndex = Format.NO_VALUE;
+
+            for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+                Format format = group.getFormat(trackIndex);
+                if (isFormatSupported(format, C.TRACK_TYPE_AUDIO)) {
+                    supportedTrackIndex = trackIndex;
+                }
+            }
+
+            if (supportedTrackIndex != Format.NO_VALUE) {
+                Format format = group.getFormat(supportedTrackIndex);
+                Track audioTrack = exoplayerTrackToGenericTrack(format, i, selection, group);
+                audioTrack.setBitrate(format.bitrate == Format.NO_VALUE ? 0 : format.bitrate);
+                audioTracks.add(audioTrack);
+            }
         }
         return audioTracks;
     }
@@ -1228,14 +1239,14 @@ public class ReactExoplayerView extends FrameLayout implements
         videoTrack.setHeight(format.height == Format.NO_VALUE ? 0 : format.height);
         videoTrack.setBitrate(format.bitrate == Format.NO_VALUE ? 0 : format.bitrate);
         if (format.codecs != null) videoTrack.setCodecs(format.codecs);
-        videoTrack.setTrackId(format.id == null ? String.valueOf(trackIndex) : format.id);;
+        videoTrack.setTrackId(format.id == null ? String.valueOf(trackIndex) : String.valueOf(format.id));
         return videoTrack;
     }
 
     private ArrayList<VideoTrack> getVideoTrackInfo() {
         ArrayList<VideoTrack> videoTracks = new ArrayList<>();
         if (trackSelector == null) {
-            // Likely player is unmounting so no audio tracks are available anymore
+            // Likely player is unmounting so no video tracks are available anymore
             return videoTracks;
         }
         MappingTrackSelector.MappedTrackInfo info = trackSelector.getCurrentMappedTrackInfo();
@@ -1250,7 +1261,7 @@ public class ReactExoplayerView extends FrameLayout implements
 
             for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
                 Format format = group.getFormat(trackIndex);
-                if (isFormatSupported(format)) {
+                if (isFormatSupported(format, C.TRACK_TYPE_VIDEO)) {
                     VideoTrack videoTrack = exoplayerVideoTrackToGenericVideoTrack(format, trackIndex);
                     videoTracks.add(videoTrack);
                 }
@@ -1292,7 +1303,7 @@ public class ReactExoplayerView extends FrameLayout implements
                             for (int representationIndex = 0; representationIndex < adaptation.representations.size(); representationIndex++) {
                                 Representation representation = adaptation.representations.get(representationIndex);
                                 Format format = representation.format;
-                                if (isFormatSupported(format)) {
+                                if (isFormatSupported(format, C.TRACK_TYPE_VIDEO)) {
                                     if (representation.presentationTimeOffsetUs <= startTimeUs) {
                                         break;
                                     }
@@ -1332,7 +1343,7 @@ public class ReactExoplayerView extends FrameLayout implements
         track.setIndex(trackIndex);
         if (format.sampleMimeType != null) track.setMimeType(format.sampleMimeType);
         if (format.language != null) track.setLanguage(format.language);
-        if (format.id != null) track.setTitle(format.id);
+        if (format.label != null) track.setTitle(format.label);
         track.setSelected(isTrackSelected(selection, group, 0));
         return track;
     }
@@ -1348,7 +1359,7 @@ public class ReactExoplayerView extends FrameLayout implements
             return textTracks;
         }
         TrackSelectionArray selectionArray = player.getCurrentTrackSelections();
-        TrackSelection selection = selectionArray.get( C.TRACK_TYPE_VIDEO );
+        TrackSelection selection = selectionArray.get(C.TRACK_TYPE_VIDEO);
         TrackGroupArray groups = info.getTrackGroups(index);
 
         for (int i = 0; i < groups.length; ++i) {
@@ -1643,43 +1654,63 @@ public class ReactExoplayerView extends FrameLayout implements
         if (type.equals("disabled")) {
             disableTrack(rendererIndex);
             return;
+        } else if (type.equals("index")) {
+            if (trackType == C.TRACK_TYPE_VIDEO && groups.length == 1) {
+                groupIndex = 0;
+                if (value.asInt() < groups.get(groupIndex).length) {
+                    tracks.set(0, value.asInt());
+                }
+            } else if (value.asInt() < groups.length) {
+                groupIndex = value.asInt();
+
+                if (trackType == C.TRACK_TYPE_AUDIO) {
+                    List<Integer> indces = getSupportedTracksIndices(C.TRACK_TYPE_AUDIO, groups.get(groupIndex));
+
+                    if (indces.size() != 0) {
+                        tracks = indces;
+                    } else {
+                        groupIndex = C.INDEX_UNSET;
+                    }
+                }
+            }
         } else if (type.equals("language")) {
             for (int i = 0; i < groups.length; ++i) {
                 Format format = groups.get(i).getFormat(0);
                 if (format.language != null && format.language.equals(value.asString())) {
                     groupIndex = i;
-                    break;
+
+                    if (trackType == C.TRACK_TYPE_AUDIO) {
+                        List<Integer> indces = getSupportedTracksIndices(C.TRACK_TYPE_AUDIO, groups.get(groupIndex));
+
+                        if (indces.size() != 0) {
+                            tracks = indces;
+                            break;
+                        } else {
+                            groupIndex = C.INDEX_UNSET;
+                        }
+                    } else {
+                        break;
+                    }
                 }
-            }
-        } else if (type.equals("title")) {
-            for (int i = 0; i < groups.length; ++i) {
-                Format format = groups.get(i).getFormat(0);
-                if (format.id != null && format.id.equals(value.asString())) {
-                    groupIndex = i;
-                    break;
-                }
-            }
-        } else if (type.equals("index")) {
-            if (value.asInt() < groups.length) {
-                groupIndex = value.asInt();
             }
         } else if (type.equals("resolution")) {
             int height = value.asInt();
-            for (int i = 0; i < groups.length; ++i) { // Search for the exact height
-                TrackGroup group = groups.get(i);
-                Format closestFormat = null;
-                int closestTrackIndex = -1;
-                boolean usingExactMatch = false;
-                for (int j = 0; j < group.length; j++) {
-                    Format format = group.getFormat(j);
-                    if (format.height == height) {
-                        groupIndex = i;
-                        tracks.set(0, j);
+            groupIndex = 0; // We cannot use tracks from different groups because
+            TrackGroup group = groups.get(0);
+            Format closestFormat = null;
+            int closestTrackIndex = -1;
+            boolean usingExactMatch = false;
+            List<Integer> indces = new ArrayList<>(group.length);
+
+            for (int j = 0; j < group.length; j++) {
+                Format format = group.getFormat(j);
+                if (isFormatSupported(format, C.TRACK_TYPE_VIDEO)) {
+                    if (format.height == height) { // Search for the exact height (several tracks with different bitrate are possible)
+                        indces.add(j);
                         closestFormat = null;
                         closestTrackIndex = -1;
                         usingExactMatch = true;
-                        break;
-                    } else if (isUsingContentResolution) {
+                    } else if (isUsingContentResolution && !usingExactMatch) {
                         // When using content resolution rather than ads, we need to try and find the closest match if there is no exact match
                         if (closestFormat != null) {
                             if ((format.bitrate > closestFormat.bitrate || format.height > closestFormat.height) && format.height < height) {
@@ -1687,31 +1718,33 @@ public class ReactExoplayerView extends FrameLayout implements
                                 closestFormat = format;
                                 closestTrackIndex = j;
                             }
-                        } else if(format.height < height) {
+                        } else if (format.height < height) {
                             closestFormat = format;
                             closestTrackIndex = j;
                         }
                     }
                 }
-                // This is a fallback if the new period contains only higher resolutions than the user has selected
-                if (closestFormat == null && isUsingContentResolution && !usingExactMatch) {
-                    // No close match found - so we pick the lowest quality
-                    int minHeight = Integer.MAX_VALUE;
-                    for (int j = 0; j < group.length; j++) {
-                        Format format = group.getFormat(j);
-                        if (format.height < minHeight) {
-                            minHeight = format.height;
-                            groupIndex = i;
-                            tracks.set(0, j);
-                        }
+            }
+            // We fond al least one exact match
+            if (indces.size() != 0) {
+                tracks = indces;
+            }
+            // This is a fallback if the new period contains only higher resolutions than the user has selected
+            if (closestFormat == null && isUsingContentResolution && !usingExactMatch) {
+                // No close match found - so we pick the lowest quality
+                int minHeight = Integer.MAX_VALUE;
+                for (int j = 0; j < group.length; j++) {
+                    Format format = group.getFormat(j);
+                    if (isFormatSupported(format, C.TRACK_TYPE_VIDEO) && format.height < minHeight) {
+                        minHeight = format.height;
+                        tracks.set(0, j);
                     }
                 }
-                // Selecting the closest match found
-                if (closestFormat != null && closestTrackIndex != -1) {
-                    // We found the closest match instead of an exact one
-                    groupIndex = i;
-                    tracks.set(0, closestTrackIndex);
-                }
+            }
+            // Selecting the closest match found
+            if (closestFormat != null && closestTrackIndex != -1) {
+                // We found the closest match instead of an exact one
+                tracks.set(0, closestTrackIndex);
             }
         } else if (trackType == C.TRACK_TYPE_TEXT && Util.SDK_INT > 18) { // Text default
             // Use system settings if possible
@@ -1720,41 +1753,26 @@ public class ReactExoplayerView extends FrameLayout implements
             if (captioningManager != null && captioningManager.isEnabled()) {
                 groupIndex = getGroupIndexForDefaultLocale(groups);
             }
-        } else if (rendererIndex == C.TRACK_TYPE_AUDIO) { // Audio default
+        } else if (trackType == C.TRACK_TYPE_AUDIO) { // Audio default
             groupIndex = getGroupIndexForDefaultLocale(groups);
+            List<Integer> indces = getSupportedTracksIndices(C.TRACK_TYPE_AUDIO, groups.get(groupIndex));
+
+            if (indces.size() != 0) {
+                tracks = indces;
+            } else {
+                groupIndex = C.INDEX_UNSET;
+            }
         }
 
         if (groupIndex == C.INDEX_UNSET && trackType == C.TRACK_TYPE_VIDEO && groups.length != 0) { // Video auto
             // Add all tracks as valid options for ABR to choose from
-            TrackGroup group = groups.get(0);
-            tracks = new ArrayList<>(group.length);
-            ArrayList<Integer> allTracks = new ArrayList<>(group.length);
-            groupIndex = 0;
-            for (int j = 0; j < group.length; j++) {
-                allTracks.add(j);
-            }
+            groupIndex = 0; // Get first video group as exoplayer does not have full support of multiple video groups
+            List<Integer> indces = getSupportedTracksIndices(C.TRACK_TYPE_VIDEO, groups.get(groupIndex));
 
-            // Valiate list of all tracks and add only supported formats
-            int supportedFormatLength = 0;
-            ArrayList<Integer> supportedTrackList = new ArrayList<>();
-            for (int g = 0; g < allTracks.size(); g++) {
-                Format format = group.getFormat(g);
-                if (isFormatSupported(format)) {
-                    supportedFormatLength++;
-                }
-            }
-            if (allTracks.size() == 1) {
-                // With only one tracks we can't remove any tracks so attempt to play it anyway
-                tracks = allTracks;
+            if (indces.size() != 0) {
+                tracks = indces;
             } else {
-                tracks =  new ArrayList<>(supportedFormatLength + 1);
-                for (int k = 0; k < allTracks.size(); k++) {
-                    Format format = group.getFormat(k);
-                    if (isFormatSupported(format)) {
-                        tracks.add(allTracks.get(k));
-                        supportedTrackList.add(allTracks.get(k));
-                    }
-                }
+                groupIndex = C.INDEX_UNSET;
             }
         }
 
@@ -1774,22 +1792,64 @@ public class ReactExoplayerView extends FrameLayout implements
         trackSelector.setParameters(selectionParameters);
     }
 
-    private boolean isFormatSupported(Format format) {
-        int width = format.width == Format.NO_VALUE ? 0 : format.width;
-        int height = format.height == Format.NO_VALUE ? 0 : format.height;
-        float frameRate = format.frameRate == Format.NO_VALUE ? 0 : format.frameRate;
+    private List<Integer> getSupportedTracksIndices(int trackType, TrackGroup group) {
+        List<Integer> indices = new ArrayList<>(group.length);
+        for (int i = 0; i < group.length; i++) {
+            Format format = group.getFormat(i);
+            if (isFormatSupported(format, trackType)) {
+                indices.add(i);
+            }
+        }
+
+        return indices;
+    }
+
+    private boolean isFormatSupported(Format format, int trackType) {
+        if (format.roleFlags == C.ROLE_FLAG_TRICK_PLAY) {
+            return false;
+        }
+
         String mimeType = format.sampleMimeType;
+
         if (mimeType == null) {
             return true;
         }
+
         boolean isSupported;
+        boolean isHardwareSupported = false;
+        boolean isSoftwareSupported = false;
+
         try {
-            MediaCodecInfo codecInfo = MediaCodecUtil.getDecoderInfo(mimeType, false, false);
-            isSupported = codecInfo.isVideoSizeAndRateSupportedV21(width, height, frameRate);
+            List<MediaCodecInfo> codecsInfoList = MediaCodecUtil.getDecoderInfos(mimeType, false, false);
+
+            for (int i = 0; i < codecsInfoList.size(); ++i) {
+                MediaCodecInfo codecInfo = codecsInfoList.get(i);
+
+                int width = format.width == Format.NO_VALUE ? 0 : format.width;
+                int height = format.height == Format.NO_VALUE ? 0 : format.height;
+                float frameRate = format.frameRate == Format.NO_VALUE ? 0 : format.frameRate;
+
+                if (trackType == C.TRACK_TYPE_VIDEO && (width > 0 || height > 0 || frameRate > 0.0)) {
+                    return codecInfo.isVideoSizeAndRateSupportedV21(width, height, frameRate);
+                }
+
+                if (codecInfo.isFormatSupported(format)) {
+                    if (codecInfo.hardwareAccelerated) {
+                        isHardwareSupported = true;
+                    }
+
+                    if (codecInfo.softwareOnly) {
+                        isSoftwareSupported = true;
+                    }
+                }
+            }
+
+            isSupported = isHardwareSupported || isSoftwareSupported;
         } catch (Exception e) {
             // Failed to get decoder info - assume it is supported
             isSupported = true;
         }
+
         return isSupported;
     }
 

@@ -208,7 +208,7 @@ public class VideoEventEmitter {
                 videoTrack.putInt("height",vTrack.getHeight());
                 videoTrack.putInt("bitrate", vTrack.getBitrate());
                 videoTrack.putString("codecs", vTrack.getCodecs());
-                videoTrack.putInt("trackId",vTrack.getId());
+                videoTrack.putString("trackId", vTrack.getTrackId());
                 videoTrack.putBoolean("selected", vTrack.isSelected());
                 waVideoTracks.pushMap(videoTrack);
             }
