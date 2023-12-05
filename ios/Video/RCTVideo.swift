@@ -1050,7 +1050,11 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         _player = nil
         _resouceLoaderDelegate = nil
         _playerObserver.clearPlayer()
-
+        _imaAdsManager.getAdsManager()?.pause()
+        _imaAdsManager.getAdsManager()?.destroy()
+        _imaAdsManager.getAdsLoader()?.contentComplete()
+        _imaAdsManager = nil
+        
         self.removePlayerLayer()
 
         if let _playerViewController = _playerViewController {
