@@ -777,6 +777,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         _chapters = chapters
     }
 
+    //Added Custom Player View Controller
+    let customPlayerViewController = UIViewController()
     @objc
     func setFullscreen(_ fullscreen: Bool) {
         if fullscreen && !_fullscreenPlayerPresented && _player != nil {
@@ -810,14 +812,41 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                         self._playerViewController?.removeFromParent()
                     }
 
-                    viewController.present(playerViewController, animated: true, completion: { [weak self] in
-                        guard let self = self else { return }
-                        // In fullscreen we must display controls
-                        self._playerViewController?.showsPlaybackControls = true
-                        self._fullscreenPlayerPresented = fullscreen
-                        self._playerViewController?.autorotate = self._fullscreenAutorotate
+//                    viewController.present(playerViewController, animated: true, completion: { [weak self] in
+//                        guard let self = self else { return }
+//                        // In fullscreen we must display controls
+//                        self._playerViewController?.showsPlaybackControls = true
+//                        self._fullscreenPlayerPresented = fullscreen
+//                        self._playerViewController?.autorotate = self._fullscreenAutorotate
+//
+//                        self.onVideoFullscreenPlayerDidPresent?(["target": self.reactTag])
+//                    })
 
-                        self.onVideoFullscreenPlayerDidPresent?(["target": self.reactTag])
+                    //ADDED THIS
+                    let playerLayer = AVPlayerLayer(player: _player)
+                    playerLayer.frame = customPlayerViewController.view.bounds // Make the playerLayer fill the whole view
+                    customPlayerViewController.view.layer.addSublayer(playerLayer)
+                    customPlayerViewController.modalPresentationStyle = .fullScreen
+                    customPlayerViewController.view.backgroundColor = UIColor.blue
+
+                    // Create play/pause button
+                    let playButton = UIButton(frame: CGRect(x: 20, y: 30, width: 50, height: 50))
+                    playButton.setTitle("Play", for: .normal)
+                    playButton.addTarget(self, action: #selector(playButtonTapped), for: .touchUpInside)
+
+                    // Create close button
+                    let closeButton = UIButton(frame: CGRect(x: 80, y: 30, width: 50, height: 50))
+                    closeButton.setTitle("Close", for: .normal)
+                    closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+
+                    // Add buttons to view
+                    customPlayerViewController.view.addSubview(playButton)
+                    customPlayerViewController.view.addSubview(closeButton)
+
+                    setFullscreenAutorotate(true)
+                    // Present the custom player view controller
+                  viewController.present(customPlayerViewController, animated: true, completion: {
+                        // Your new completion code here, if any
                     })
                 }
             }
@@ -827,6 +856,21 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                 self?.videoPlayerViewControllerDidDismiss(playerViewController: _playerViewController)
             })
         }
+    }
+
+        // ADDED THESE TWO FUNCTIONS: PLAY BUTTON TAPPED AND CLOSE BUTTON TAPPED
+        @objc func playButtonTapped() {
+                        if let player = _player {
+                            if player.timeControlStatus == .paused || player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
+                                player.play()
+                            } else if player.timeControlStatus == .playing {
+                                player.pause()
+                            }
+                        }
+                    }
+
+    @objc func closeButtonTapped() {
+        customPlayerViewController.dismiss(animated: true, completion: nil)
     }
 
     @objc
