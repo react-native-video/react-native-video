@@ -472,7 +472,7 @@ export interface VideoNativeProps extends ViewProps {
   preventsDisplaySleepDuringVideoPlayback?: boolean;
   preferredForwardBufferDuration?: Float; //ios, 0
   playWhenInactive?: boolean; // ios, false
-  pictureInPicture?: boolean; // ios, false
+  pictureInPicture?: boolean; // default false
   ignoreSilentSwitch?: WithDefault<'inherit' | 'ignore' | 'obey', 'inherit'>; // ios, 'inherit'
   mixWithOthers?: WithDefault<'inherit' | 'mix' | 'duck', 'inherit'>; // ios, 'inherit'
   rate?: Float;

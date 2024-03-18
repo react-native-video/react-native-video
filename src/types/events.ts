@@ -41,7 +41,7 @@ export interface ReactVideoEvents {
   onLoadStart?: (e: OnLoadStartData) => void; //All
   onPictureInPictureStatusChanged?: (
     e: OnPictureInPictureStatusChangedData,
-  ) => void; //iOS
+  ) => void; //Android, iOS
   onPlaybackRateChange?: (e: OnPlaybackData) => void; //All
   onVolumeChange?: (e: OnVolumeChangeData) => void; //Android, iOS
   onProgress?: (e: OnProgressData) => void; //All
