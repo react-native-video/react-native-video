@@ -99,6 +99,7 @@ import com.brentvatne.common.api.Track;
 import com.brentvatne.common.api.VideoTrack;
 import com.brentvatne.common.react.VideoEventEmitter;
 import com.brentvatne.common.toolbox.DebugLog;
+import com.brentvatne.common.toolbox.RNVSimpleCache;
 import com.brentvatne.react.R;
 import com.brentvatne.receiver.AudioBecomingNoisyReceiver;
 import com.brentvatne.receiver.BecomingNoisyListener;
@@ -185,7 +186,6 @@ public class ReactExoplayerView extends FrameLayout implements
     private boolean hasDrmFailed = false;
     private boolean isUsingContentResolution = false;
     private boolean selectTrackWhenReady = false;
-
     private int minBufferMs = DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
     private int maxBufferMs = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
     private int bufferForPlaybackMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
@@ -636,8 +636,11 @@ public class ReactExoplayerView extends FrameLayout implements
                 .setAdEventListener(this)
                 .setAdErrorListener(this)
                 .build();
-
         DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(mediaDataSourceFactory);
+        if (RNVSimpleCache.INSTANCE.getCacheDataSourceFactory() != null) {
+            mediaSourceFactory.setDataSourceFactory(RNVSimpleCache.INSTANCE.getCacheDataSourceFactory());
+        }
+
         if (adsLoader != null) {
             mediaSourceFactory.setLocalAdInsertionComponents(unusedAdTagUri -> adsLoader, exoPlayerView);
         }
@@ -832,9 +835,17 @@ public class ReactExoplayerView extends FrameLayout implements
                 );
                 break;
             case CONTENT_TYPE_OTHER:
-                mediaSourceFactory = new ProgressiveMediaSource.Factory(
-                        mediaDataSourceFactory
-                );
+                if (uri.toString().startsWith("file://") ||
+                RNVSimpleCache.INSTANCE.getCacheDataSourceFactory() == null) {
+                    mediaSourceFactory = new ProgressiveMediaSource.Factory(
+                            mediaDataSourceFactory
+                    );
+                } else {
+                    mediaSourceFactory = new ProgressiveMediaSource.Factory(
+                            RNVSimpleCache.INSTANCE.getCacheDataSourceFactory()
+                    );
+
+                }
                 break;
             default: {
                 throw new IllegalStateException("Unsupported type: " + type);
@@ -2032,7 +2043,7 @@ public class ReactExoplayerView extends FrameLayout implements
         exoPlayerView.setHideShutterView(hideShutterView);
     }
 
-    public void setBufferConfig(int newMinBufferMs, int newMaxBufferMs, int newBufferForPlaybackMs, int newBufferForPlaybackAfterRebufferMs, double newMaxHeapAllocationPercent, double newMinBackBufferMemoryReservePercent, double newMinBufferMemoryReservePercent) {
+    public void setBufferConfig(int newMinBufferMs, int newMaxBufferMs, int newBufferForPlaybackMs, int newBufferForPlaybackAfterRebufferMs, double newMaxHeapAllocationPercent, double newMinBackBufferMemoryReservePercent, double newMinBufferMemoryReservePercent, int cacheSize) {
         minBufferMs = newMinBufferMs;
         maxBufferMs = newMaxBufferMs;
         bufferForPlaybackMs = newBufferForPlaybackMs;
@@ -2040,6 +2051,11 @@ public class ReactExoplayerView extends FrameLayout implements
         maxHeapAllocationPercent = newMaxHeapAllocationPercent;
         minBackBufferMemoryReservePercent = newMinBackBufferMemoryReservePercent;
         minBufferMemoryReservePercent = newMinBufferMemoryReservePercent;
+        RNVSimpleCache.INSTANCE.setSimpleCache(
+                this.getContext(),
+                cacheSize,
+                buildHttpDataSourceFactory(false)
+        );
         releasePlayer();
         initializePlayer();
     }

@@ -316,7 +316,7 @@ class VideoPlayer extends Component {
   };
 
   onEnd = () => {
-    this.channelUp();
+    !this.state.loop && this.channelUp();
   };
 
   toggleFullscreen() {
@@ -785,6 +785,13 @@ class VideoPlayer extends Component {
           selectedTextTrack={this.state.selectedTextTrack}
           selectedAudioTrack={this.state.selectedAudioTrack}
           playInBackground={false}
+          bufferConfig={{
+            minBufferMs: 15000,
+            maxBufferMs: 50000,
+            bufferForPlaybackMs: 2500,
+            bufferForPlaybackAfterRebufferMs: 5000,
+            cacheSizeMB: 200,
+          }}
         />
       </TouchableOpacity>
     );
