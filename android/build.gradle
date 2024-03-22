@@ -164,6 +164,8 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer-dash:$media3_version"
     // For HLS playback support with ExoPlayer
     implementation "androidx.media3:media3-exoplayer-hls:$media3_version"
+
+    implementation "androidx.media3:media3-exoplayer-rtsp:$media3_version"
     // For ad insertion using the Interactive Media Ads SDK with ExoPlayer
     if (useExoplayerIMA) {
         implementation "androidx.media3:media3-exoplayer-ima:$media3_version"

@@ -451,6 +451,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
                 || lowerCaseUri.startsWith("https://")
                 || lowerCaseUri.startsWith("content://")
                 || lowerCaseUri.startsWith("file://")
+                || lowerCaseUri.startsWith("rtsp://")
                 || lowerCaseUri.startsWith("asset://");
     }
 }
