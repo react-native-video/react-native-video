@@ -283,6 +283,21 @@ Controls whether the ExoPlayer shutter view (black screen while loading) is enab
 - **false (default)** - Show shutter view
 - **true** - Hide shutter view
 
+### `limitMaxResolution`
+
+<PlatformsList types={['Android']} />
+
+Controls whether to limit the available videotracks to not exceed device screen resolution or video surface. If enabled the video track list will be limited to resolutions that are smaller or equal to the screen resolution of the device (this also affects automatic video track selection).
+
+- **disabled (default)** - Don't limit the video track resolution.
+- **screen** - Limit the video track resolution to the device screen resolution.
+- **videoSurface** - Limit the video track resoultion to the video surface.
+
+Example:
+```
+limitMaxResolutionToScreenSize={true}
+```
+
 ### `ignoreSilentSwitch`
 
 <PlatformsList types={['iOS', 'visionOS']} />

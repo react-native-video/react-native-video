@@ -16,8 +16,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.accessibility.CaptioningManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -92,6 +94,7 @@ import androidx.media3.extractor.metadata.id3.Id3Frame;
 import androidx.media3.extractor.metadata.id3.TextInformationFrame;
 import androidx.media3.ui.LegacyPlayerControlView;
 
+import com.brentvatne.common.api.LimitMode;
 import com.brentvatne.common.api.ResizeMode;
 import com.brentvatne.common.api.SubtitleStyle;
 import com.brentvatne.common.api.TimedMetadata;
@@ -121,6 +124,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -186,6 +190,7 @@ public class ReactExoplayerView extends FrameLayout implements
     private boolean hasDrmFailed = false;
     private boolean isUsingContentResolution = false;
     private boolean selectTrackWhenReady = false;
+    private String limitMaxResolutionToScreenSize = LimitMode.DISABLED;
 
     private int minBufferMs = DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
     private int maxBufferMs = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
@@ -196,6 +201,7 @@ public class ReactExoplayerView extends FrameLayout implements
     private double minBufferMemoryReservePercent = ReactExoplayerView.DEFAULT_MIN_BUFFER_MEMORY_RESERVE;
     private Handler mainHandler;
     private Runnable mainRunnable;
+    private double enableBackBufferAvailableMemory = -1f;
 
     // Props from React
     private int backBufferDurationMs = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
@@ -1258,6 +1264,15 @@ public class ReactExoplayerView extends FrameLayout implements
 
             for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
                 Format format = group.getFormat(trackIndex);
+
+                int shortestFormatSide = Math.min(format.height, format.width);
+                int shortestScreenSize = this.getShortestSide(this.themedReactContext);
+
+                // Don't add video track that extend over screen resolution
+                if(!limitMaxResolutionToScreenSize.equals(LimitMode.DISABLED) && shortestFormatSide > shortestScreenSize) {
+                    continue;
+                }
+
                 if (isFormatSupported(format)) {
                     VideoTrack videoTrack = exoplayerVideoTrackToGenericVideoTrack(format, trackIndex);
                     videoTracks.add(videoTrack);
@@ -1265,6 +1280,28 @@ public class ReactExoplayerView extends FrameLayout implements
             }
         }
         return videoTracks;
+    }
+
+    private int getShortestSide(ThemedReactContext context) {
+        int width = 0;
+        int height = 0;
+
+        switch (limitMaxResolutionToScreenSize) {
+            case LimitMode.SCREEN_SIZE -> {
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+                windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+
+                width = displayMetrics.widthPixels;
+                height = displayMetrics.heightPixels;
+            }
+            case LimitMode.VIDEO_SURFACE -> {
+                width = exoPlayerView.getWidth();
+                height = exoPlayerView.getHeight();
+            }
+        }
+
+        return Math.min(width, height);
     }
 
     private ArrayList<VideoTrack> getVideoTrackInfoFromManifest() {
@@ -2037,6 +2074,10 @@ public class ReactExoplayerView extends FrameLayout implements
 
     public void useSecureView(boolean useSecureView) {
         exoPlayerView.useSecureView(useSecureView);
+    }
+
+    public void setLimitMaxResolution(String limitMaxResolution) {
+        limitMaxResolutionToScreenSize = limitMaxResolution;
     }
 
     public void setHideShutterView(boolean hideShutterView) {

@@ -497,6 +497,10 @@ export interface VideoNativeProps extends ViewProps {
   trackId?: string; // Android
   useTextureView?: boolean; // Android
   useSecureView?: boolean; // Android
+  limitMaxResolution?: WithDefault<
+    'screen' | 'videoArea' | 'disabled',
+    'disabled'
+  >; // Android
   onVideoLoad?: DirectEventHandler<OnLoadData>;
   onVideoLoadStart?: DirectEventHandler<OnLoadStartData>;
   onVideoAspectRatio?: DirectEventHandler<OnVideoAspectRatioData>;

@@ -180,6 +180,8 @@ export enum PosterResizeModeType {
 
 export type AudioOutput = 'speaker' | 'earpiece';
 
+type LimitMaxResolutionMode = 'screen' | 'videoArea' | 'disabled';
+
 export interface ReactVideoProps extends ReactVideoEvents, ViewProps {
   source?: ReactVideoSource;
   drm?: Drm;
@@ -231,6 +233,7 @@ export interface ReactVideoProps extends ReactVideoEvents, ViewProps {
   trackId?: string; // Android
   useTextureView?: boolean; // Android
   useSecureView?: boolean; // Android
+  limitMaxResolution?: LimitMaxResolutionMode; // Android
   volume?: number;
   localSourceEncryptionKeyScheme?: string;
   debug?: DebugConfig;

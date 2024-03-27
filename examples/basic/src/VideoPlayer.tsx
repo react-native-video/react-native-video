@@ -761,6 +761,7 @@ class VideoPlayer extends Component {
           ref={(ref: VideoRef) => {
             this.video = ref;
           }}
+          limitMaxResolution="disabled"
           source={this.srcList[this.state.srcListId]}
           adTagUrl={this.srcList[this.state.srcListId]?.adTagUrl}
           drm={this.srcList[this.state.srcListId]?.drm}
