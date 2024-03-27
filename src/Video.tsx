@@ -71,6 +71,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       selectedVideoTrack,
       selectedAudioTrack,
       selectedTextTrack,
+      mediaSession,
       onLoadStart,
       onLoad,
       onError,

@@ -14,6 +14,8 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
@@ -112,6 +114,8 @@ import com.google.ads.interactivemedia.v3.api.AdError;
 import com.google.ads.interactivemedia.v3.api.AdEvent;
 import com.google.ads.interactivemedia.v3.api.AdErrorEvent;
 import com.google.common.collect.ImmutableList;
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -162,6 +166,10 @@ public class ReactExoplayerView extends FrameLayout implements
     private ExoPlayerView exoPlayerView;
     private FullScreenPlayerView fullScreenPlayerView;
     private ImaAdsLoader adsLoader;
+
+    private MediaSessionCompat mediaSession;
+    private MediaSessionConnector mediaSessionConnector;
+    private MediaDescriptionCompat.Builder mediaSessionMetadata = new MediaDescriptionCompat.Builder();
 
     private DataSource.Factory mediaDataSourceFactory;
     private ExoPlayer player;
@@ -663,6 +671,16 @@ public class ReactExoplayerView extends FrameLayout implements
         PlaybackParameters params = new PlaybackParameters(rate, 1f);
         player.setPlaybackParameters(params);
         changeAudioOutput(this.audioOutput);
+
+        mediaSession = new MediaSessionCompat(this, "sample");
+        mediaSessionConnector = new MediaSessionConnector(mediaSession);
+        mediaSessionConnector.setPlayer(player);
+        mediaSessionConnector.setQueueNavigator(new TimelineQueueNavigator(mediaSession) {
+            @Override
+            public MediaDescriptionCompat getMediaDescription(Player player, int windowIndex) {
+                return mediaSessionMetadata.build();
+            }
+        });
     }
 
     private DrmSessionManager initializePlayerDrm(ReactExoplayerView self) {
@@ -732,6 +750,10 @@ public class ReactExoplayerView extends FrameLayout implements
         }
         player.prepare();
         playerNeedsSource = false;
+
+        if (mediaSession != null) {
+            mediaSession.setActive(true);
+        }
 
         reLayoutControls();
 
@@ -909,6 +931,10 @@ public class ReactExoplayerView extends FrameLayout implements
             adsLoader.release();
         }
         adsLoader = null;
+        if (mediaSession != null) {
+            mediaSession.release();
+            mediaSession = null;
+        }
         progressHandler.removeMessages(SHOW_PROGRESS);
         audioBecomingNoisyReceiver.removeListener();
         bandwidthMeter.removeEventListener(this);
@@ -1037,6 +1063,9 @@ public class ReactExoplayerView extends FrameLayout implements
     private void onStopPlayback() {
         if (isFullscreen) {
             setFullscreen(false);
+        }
+        if (mediaSession != null) {
+            mediaSession.setActive(false);
         }
         audioManager.abandonAudioFocus(audioFocusChangeListener);
     }
@@ -2097,6 +2126,11 @@ public class ReactExoplayerView extends FrameLayout implements
     public void onDrmKeysRemoved(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId) {
         DebugLog.d("DRM Info", "onDrmKeysRemoved");
     }
+
+    public void setMediaSessionTitle(String title) { this.mediaSessionMetadata.setTitle((title)); }
+    public void setMediaSessionSubtitle(String subtitle) { this.mediaSessionMetadata.setSubtitle((subtitle)); }
+    public void setMediaSessionDescription(String description) { this.mediaSessionMetadata.setDescription((description)); }
+    public void setMediaSessionImage(String uri) { this.mediaSessionMetadata.setMediaUri((Uri.parse(uri))); }
 
     /**
      * Handling controls prop

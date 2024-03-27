@@ -180,6 +180,13 @@ export enum PosterResizeModeType {
 
 export type AudioOutput = 'speaker' | 'earpiece';
 
+export type MediaSession = {
+  title: string;
+  subtitle: string;
+  description: string;
+  imageUri: string;
+};
+
 export interface ReactVideoProps extends ReactVideoEvents, ViewProps {
   source?: ReactVideoSource;
   drm?: Drm;
@@ -235,4 +242,5 @@ export interface ReactVideoProps extends ReactVideoEvents, ViewProps {
   localSourceEncryptionKeyScheme?: string;
   debug?: DebugConfig;
   allowsExternalPlayback?: boolean; // iOS
+  mediaSession?: MediaSession;
 }

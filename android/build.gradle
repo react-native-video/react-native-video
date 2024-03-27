@@ -158,6 +158,9 @@ dependencies {
     // For media playback using ExoPlayer
     implementation "androidx.media3:media3-exoplayer:$media3_version"
 
+    // For exposing and controlling media sessions
+    implementation "androidx.media3:media3-session:$media3_version"
+
     // For Smooth Streaming playback support with ExoPlayer
     implementation "androidx.media3:media3-exoplayer-smoothstreaming:$media3_version"
     // For DASH playback support with ExoPlayer

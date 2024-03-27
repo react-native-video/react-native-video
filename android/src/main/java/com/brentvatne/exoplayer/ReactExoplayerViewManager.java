@@ -90,6 +90,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_CONTROLS = "controls";
     private static final String PROP_SUBTITLE_STYLE = "subtitleStyle";
     private static final String PROP_SHUTTER_COLOR = "shutterColor";
+    private static final String PROP_MEDIA_SESSION = "mediaSession";
     private static final String PROP_DEBUG = "debug";
 
     private ReactExoplayerConfig config;
@@ -431,6 +432,21 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
             minBufferMemoryReservePercent = ReactBridgeUtils.safeGetDouble(bufferConfig, PROP_BUFFER_CONFIG_MIN_BUFFER_MEMORY_RESERVE_PERCENT, minBufferMemoryReservePercent);
             videoView.setBufferConfig(minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs, maxHeapAllocationPercent, minBackBufferMemoryReservePercent, minBufferMemoryReservePercent);
         }
+    }
+
+    @ReactProp(name = PROP_MEDIA_SESSION)
+    public void setMediaSession(final ReactExoplayerView videoView, @Nullable ReadableMap mediaSessionMetadata) {
+      if (mediaSessionMetadata == null) return;
+
+      String title = mediaSessionMetadata.getString("title");
+      String subtitle = mediaSessionMetadata.getString("subtitle");
+      String description = mediaSessionMetadata.getString("description");
+      String imageUri = mediaSessionMetadata.getString("imageUri");
+
+      if (title != null) { videoView.setMediaSessionTitle(title); }
+      if (subtitle != null) { videoView.setMediaSessionSubtitle(subtitle); }
+      if (description != null) { videoView.setMediaSessionDescription(description); }
+      if (imageUri != null) { videoView.setMediaSessionImage(imageUri); }
     }
 
     @ReactProp(name = PROP_DEBUG, defaultBoolean = false)
