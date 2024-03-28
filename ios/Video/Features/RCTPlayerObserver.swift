@@ -27,11 +27,14 @@ protocol RCTPlayerObserverHandler: RCTPlayerObserverHandlerObjc {
     func handleViewControllerOverlayViewFrameChange(overlayView: UIView, change: NSKeyValueObservedChange<CGRect>)
     func handleTracksChange(playerItem: AVPlayerItem, change: NSKeyValueObservedChange<[AVPlayerItemTrack]>)
     func handleLegibleOutput(strings: [NSAttributedString])
+    func handlePictureInPictureEnter()
+    func handlePictureInPictureExit()
+    func handleRestoreUserInterfaceForPictureInPictureStop()
 }
 
 // MARK: - RCTPlayerObserver
 
-class RCTPlayerObserver: NSObject, AVPlayerItemMetadataOutputPushDelegate, AVPlayerItemLegibleOutputPushDelegate {
+class RCTPlayerObserver: NSObject, AVPlayerItemMetadataOutputPushDelegate, AVPlayerItemLegibleOutputPushDelegate, AVPlayerViewControllerDelegate {
     weak var _handlers: RCTPlayerObserverHandler?
 
     var player: AVPlayer? {
@@ -105,6 +108,7 @@ class RCTPlayerObserver: NSObject, AVPlayerItemMetadataOutputPushDelegate, AVPla
     private var _playerLayerReadyForDisplayObserver: NSKeyValueObservation?
     private var _playerViewControllerOverlayFrameObserver: NSKeyValueObservation?
     private var _playerTracksObserver: NSKeyValueObservation?
+    private var _restoreUserInterfaceForPIPStopCompletionHandler: ((Bool) -> Void)?
 
     deinit {
         if let _handlers {
@@ -192,11 +196,14 @@ class RCTPlayerObserver: NSObject, AVPlayerItemMetadataOutputPushDelegate, AVPla
             options: [.new, .old],
             changeHandler: _handlers.handleViewControllerOverlayViewFrameChange
         )
+
+        playerViewController.delegate = self
     }
 
     func removePlayerViewControllerObservers() {
         _playerViewControllerReadyForDisplayObserver?.invalidate()
         _playerViewControllerOverlayFrameObserver?.invalidate()
+        playerViewController?.delegate = nil
     }
 
     func addPlayerLayerObserver() {
@@ -287,5 +294,35 @@ class RCTPlayerObserver: NSObject, AVPlayerItemMetadataOutputPushDelegate, AVPla
         if let _handlers {
             NotificationCenter.default.removeObserver(_handlers)
         }
+    }
+
+    func playerViewControllerDidStartPictureInPicture(_: AVPlayerViewController) {
+        guard let _handlers else { return }
+
+        _handlers.handlePictureInPictureEnter()
+    }
+
+    func playerViewControllerDidStopPictureInPicture(_: AVPlayerViewController) {
+        guard let _handlers else { return }
+
+        _handlers.handlePictureInPictureExit()
+    }
+
+    func playerViewController(
+        _: AVPlayerViewController,
+        restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void
+    ) {
+        guard let _handlers else { return }
+
+        _handlers.handleRestoreUserInterfaceForPictureInPictureStop()
+
+        _restoreUserInterfaceForPIPStopCompletionHandler = completionHandler
+    }
+
+    func setRestoreUserInterfaceForPIPStopCompletionHandler(_ restore: Bool) {
+        guard let _restoreUserInterfaceForPIPStopCompletionHandler else { return }
+
+        _restoreUserInterfaceForPIPStopCompletionHandler(restore)
+        self._restoreUserInterfaceForPIPStopCompletionHandler = nil
     }
 }

@@ -129,6 +129,18 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         onPictureInPictureStatusChanged?(["isActive": NSNumber(value: false)])
     }
 
+    func handlePictureInPictureEnter() {
+        onPictureInPictureStatusChanged?(["isActive": NSNumber(value: true)])
+    }
+
+    func handlePictureInPictureExit() {
+        onPictureInPictureStatusChanged?(["isActive": NSNumber(value: false)])
+    }
+
+    func handleRestoreUserInterfaceForPictureInPictureStop() {
+        onRestoreUserInterfaceForPictureInPictureStop?([:])
+    }
+
     func isPipEnabled() -> Bool {
         return _pictureInPictureEnabled
     }
@@ -593,7 +605,11 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc
     func setRestoreUserInterfaceForPIPStopCompletionHandler(_ restore: Bool) {
         #if os(iOS)
-            _pip?.setRestoreUserInterfaceForPIPStopCompletionHandler(restore)
+            if _pip != nil {
+                _pip?.setRestoreUserInterfaceForPIPStopCompletionHandler(restore)
+            } else {
+                _playerObserver.setRestoreUserInterfaceForPIPStopCompletionHandler(restore)
+            }
         #endif
     }
 
