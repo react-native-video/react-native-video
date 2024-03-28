@@ -58,7 +58,6 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_MUTED = "muted";
     private static final String PROP_AUDIO_OUTPUT = "audioOutput";
     private static final String PROP_VOLUME = "volume";
-    private static final String PROP_BACK_BUFFER_DURATION_MS = "backBufferDurationMs";
     private static final String PROP_BUFFER_CONFIG = "bufferConfig";
     private static final String PROP_BUFFER_CONFIG_MIN_BUFFER_MS = "minBufferMs";
     private static final String PROP_BUFFER_CONFIG_MAX_BUFFER_MS = "maxBufferMs";
@@ -67,6 +66,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_BUFFER_CONFIG_MAX_HEAP_ALLOCATION_PERCENT = "maxHeapAllocationPercent";
     private static final String PROP_BUFFER_CONFIG_MIN_BACK_BUFFER_MEMORY_RESERVE_PERCENT = "minBackBufferMemoryReservePercent";
     private static final String PROP_BUFFER_CONFIG_MIN_BUFFER_MEMORY_RESERVE_PERCENT = "minBufferMemoryReservePercent";
+    private static final String PROP_BUFFER_CONFIG_BACK_BUFFER_DURATION_MS = "backBufferDurationMs";
     private static final String PROP_PREVENTS_DISPLAY_SLEEP_DURING_VIDEO_PLAYBACK = "preventsDisplaySleepDuringVideoPlayback";
     private static final String PROP_PROGRESS_UPDATE_INTERVAL = "progressUpdateInterval";
     private static final String PROP_REPORT_BANDWIDTH = "reportBandwidth";
@@ -350,11 +350,6 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
         videoView.setFocusable(focusable);
     }
 
-    @ReactProp(name = PROP_BACK_BUFFER_DURATION_MS, defaultInt = 0)
-    public void setBackBufferDurationMs(final ReactExoplayerView videoView, final int backBufferDurationMs) {
-        videoView.setBackBufferDurationMs(backBufferDurationMs);
-    }
-
     @ReactProp(name = PROP_CONTENT_START_TIME, defaultInt = -1)
     public void setContentStartTime(final ReactExoplayerView videoView, final int contentStartTime) {
         videoView.setContentStartTime(contentStartTime);
@@ -411,6 +406,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
         int maxBufferMs = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
         int bufferForPlaybackMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
         int bufferForPlaybackAfterRebufferMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
+        int backBufferDurationMs = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
         double maxHeapAllocationPercent = ReactExoplayerView.DEFAULT_MAX_HEAP_ALLOCATION_PERCENT;
         double minBackBufferMemoryReservePercent = ReactExoplayerView.DEFAULT_MIN_BACK_BUFFER_MEMORY_RESERVE;
         double minBufferMemoryReservePercent = ReactExoplayerView.DEFAULT_MIN_BUFFER_MEMORY_RESERVE;
@@ -423,7 +419,8 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
             maxHeapAllocationPercent = ReactBridgeUtils.safeGetDouble(bufferConfig, PROP_BUFFER_CONFIG_MAX_HEAP_ALLOCATION_PERCENT, maxHeapAllocationPercent);
             minBackBufferMemoryReservePercent = ReactBridgeUtils.safeGetDouble(bufferConfig, PROP_BUFFER_CONFIG_MIN_BACK_BUFFER_MEMORY_RESERVE_PERCENT, minBackBufferMemoryReservePercent);
             minBufferMemoryReservePercent = ReactBridgeUtils.safeGetDouble(bufferConfig, PROP_BUFFER_CONFIG_MIN_BUFFER_MEMORY_RESERVE_PERCENT, minBufferMemoryReservePercent);
-            videoView.setBufferConfig(minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs, maxHeapAllocationPercent, minBackBufferMemoryReservePercent, minBufferMemoryReservePercent);
+            backBufferDurationMs = ReactBridgeUtils.safeGetInt(bufferConfig, PROP_BUFFER_CONFIG_BACK_BUFFER_DURATION_MS, backBufferDurationMs);
+            videoView.setBufferConfig(minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs, maxHeapAllocationPercent, minBackBufferMemoryReservePercent, minBufferMemoryReservePercent, backBufferDurationMs);
         }
     }
 

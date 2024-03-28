@@ -191,6 +191,7 @@ public class ReactExoplayerView extends FrameLayout implements
     private int maxBufferMs = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
     private int bufferForPlaybackMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
     private int bufferForPlaybackAfterRebufferMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
+    private int backBufferDurationMs = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
     private double maxHeapAllocationPercent = ReactExoplayerView.DEFAULT_MAX_HEAP_ALLOCATION_PERCENT;
     private double minBackBufferMemoryReservePercent = ReactExoplayerView.DEFAULT_MIN_BACK_BUFFER_MEMORY_RESERVE;
     private double minBufferMemoryReservePercent = ReactExoplayerView.DEFAULT_MIN_BUFFER_MEMORY_RESERVE;
@@ -198,7 +199,6 @@ public class ReactExoplayerView extends FrameLayout implements
     private Runnable mainRunnable;
 
     // Props from React
-    private int backBufferDurationMs = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
     private Uri srcUri;
     private long startPositionMs = -1;
     private long cropStartMs = -1;
@@ -1944,20 +1944,6 @@ public class ReactExoplayerView extends FrameLayout implements
         exoPlayerView.setFocusable(this.focusable);
     }
 
-    public void setBackBufferDurationMs(int backBufferDurationMs) {
-        Runtime runtime = Runtime.getRuntime();
-        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-        long freeMemory = runtime.maxMemory() - usedMemory;
-        long reserveMemory = (long)minBackBufferMemoryReservePercent * runtime.maxMemory();
-        if (reserveMemory > freeMemory) {
-            // We don't have enough memory in reserve so we will
-            DebugLog.w("ExoPlayer Warning", "Not enough reserve memory, setting back buffer to 0ms to reduce memory pressure!");
-            this.backBufferDurationMs = 0;
-            return;
-        }
-        this.backBufferDurationMs = backBufferDurationMs;
-    }
-
     public void setContentStartTime(int contentStartTime) {
         this.contentStartTime = contentStartTime;
     }
@@ -2043,7 +2029,7 @@ public class ReactExoplayerView extends FrameLayout implements
         exoPlayerView.setHideShutterView(hideShutterView);
     }
 
-    public void setBufferConfig(int newMinBufferMs, int newMaxBufferMs, int newBufferForPlaybackMs, int newBufferForPlaybackAfterRebufferMs, double newMaxHeapAllocationPercent, double newMinBackBufferMemoryReservePercent, double newMinBufferMemoryReservePercent) {
+    public void setBufferConfig(int newMinBufferMs, int newMaxBufferMs, int newBufferForPlaybackMs, int newBufferForPlaybackAfterRebufferMs, double newMaxHeapAllocationPercent, double newMinBackBufferMemoryReservePercent, double newMinBufferMemoryReservePercent, int newBackBufferDurationMs) {
         minBufferMs = newMinBufferMs;
         maxBufferMs = newMaxBufferMs;
         bufferForPlaybackMs = newBufferForPlaybackMs;
@@ -2051,6 +2037,7 @@ public class ReactExoplayerView extends FrameLayout implements
         maxHeapAllocationPercent = newMaxHeapAllocationPercent;
         minBackBufferMemoryReservePercent = newMinBackBufferMemoryReservePercent;
         minBufferMemoryReservePercent = newMinBufferMemoryReservePercent;
+        backBufferDurationMs = newBackBufferDurationMs;
         releasePlayer();
         initializePlayer();
     }

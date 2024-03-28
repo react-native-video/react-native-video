@@ -68,6 +68,7 @@ export type BufferConfig = {
   maxBufferMs?: number;
   bufferForPlaybackMs?: number;
   bufferForPlaybackAfterRebufferMs?: number;
+  backBufferDurationMs?: number; // Android
   maxHeapAllocationPercent?: number;
   minBackBufferMemoryReservePercent?: number;
   minBufferMemoryReservePercent?: number;
@@ -188,7 +189,6 @@ export interface ReactVideoProps extends ReactVideoEvents, ViewProps {
   audioOnly?: boolean;
   audioOutput?: AudioOutput; // Mobile
   automaticallyWaitsToMinimizeStalling?: boolean; // iOS
-  backBufferDurationMs?: number; // Android
   bufferConfig?: BufferConfig; // Android
   chapters?: Chapters[]; // iOS
   contentStartTime?: number; // Android

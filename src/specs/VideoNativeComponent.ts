@@ -108,6 +108,7 @@ type BufferConfig = Readonly<{
   bufferForPlaybackMs?: Float;
   bufferForPlaybackAfterRebufferMs?: Float;
   maxHeapAllocationPercent?: Float;
+  backBufferDurationMs?: Float; // Android
   minBackBufferMemoryReservePercent?: Float;
   minBufferMemoryReservePercent?: Float;
 }>;
@@ -484,7 +485,6 @@ export interface VideoNativeProps extends ViewProps {
   localSourceEncryptionKeyScheme?: string;
   debug?: DebugConfig;
 
-  backBufferDurationMs?: Int32; // Android
   bufferConfig?: BufferConfig; // Android
   contentStartTime?: Int32; // Android
   currentPlaybackTime?: Double; // Android

@@ -58,12 +58,6 @@ A Boolean value that indicates whether the player should automatically delay pla
 - **false** - Immediately starts playback
 - **true (default)** - Delays playback in order to minimize stalling
 
-### `backBufferDurationMs`
-
-<PlatformsList types={['Android']} />
-
-The number of milliseconds of buffer to keep before the current position. This allows rewinding without rebuffering within that duration.
-
 ### `bufferConfig`
 
 <PlatformsList types={['Android']} />
@@ -76,11 +70,11 @@ Adjust the buffer settings. This prop takes an object with one or more of the pr
 | maxBufferMs                       | number | The default maximum duration of media that the player will attempt to buffer, in milliseconds.                                                                                                  |
 | bufferForPlaybackMs               | number | The default duration of media that must be buffered for playback to start or resume following a user action such as a seek, in milliseconds.                                                    |
 | bufferForPlaybackAfterRebufferMs  | number | The default duration of media that must be buffered for playback to resume after a rebuffer, in milliseconds. A rebuffer is defined to be caused by buffer depletion rather than a user action. |
+| backBufferDurationMs              | number | The number of milliseconds of buffer to keep before the current position. This allows rewinding without rebuffering within that duration.                                                       |
 | maxHeapAllocationPercent          | number | The percentage of available heap that the video can use to buffer, between 0 and 1                                                                                                              |
 | minBackBufferMemoryReservePercent | number | The percentage of available app memory at which during startup the back buffer will be disabled, between 0 and 1                                                                                |
 | minBufferMemoryReservePercent     | number | The percentage of available app memory to keep in reserve that prevents buffer from using it, between 0 and 1                                                                                   |
 
-This prop should only be set when you are setting the source, changing it after the media is loaded will cause it to be reloaded.
 
 Example with default values:
 
@@ -89,7 +83,8 @@ bufferConfig={{
   minBufferMs: 15000,
   maxBufferMs: 50000,
   bufferForPlaybackMs: 2500,
-  bufferForPlaybackAfterRebufferMs: 5000
+  bufferForPlaybackAfterRebufferMs: 5000,
+  backBufferDurationMs: 120000,
 }}
 ```
 
