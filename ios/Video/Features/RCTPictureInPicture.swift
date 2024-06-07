@@ -11,7 +11,13 @@ import React
         private var _onRestoreUserInterfaceForPictureInPictureStop: (() -> Void)?
         private var _restoreUserInterfaceForPIPStopCompletionHandler: ((Bool) -> Void)?
         private var _pipController: AVPictureInPictureController?
-        private var _isActive = false
+        var isInitialized: Bool {
+            return _pipController != nil
+        }
+
+        var isPictureInPictureActive: Bool {
+            return _pipController?.isPictureInPictureActive ?? false
+        }
 
         init(
             _ onPictureInPictureEnter: (() -> Void)? = nil,
@@ -67,20 +73,22 @@ import React
             _pipController = nil
         }
 
-        func setPictureInPicture(_ isActive: Bool) {
-            if _isActive == isActive {
-                return
-            }
-            _isActive = isActive
-
+        func enterPictureInPicture() {
             guard let _pipController else { return }
+            if !isPictureInPictureActive {
+                _pipController.startPictureInPicture()
+            }
+        }
 
-            if _isActive && !_pipController.isPictureInPictureActive {
-                DispatchQueue.main.async {
-                    _pipController.startPictureInPicture()
-                }
-            } else if !_isActive && _pipController.isPictureInPictureActive {
-                DispatchQueue.main.async {
+        func exitPictureInPicture() {
+            guard let _pipController else { return }
+            if isPictureInPictureActive {
+                let state = UIApplication.shared.applicationState
+                if state == .background || state == .inactive {
+                    deinitPipController()
+                    _onPictureInPictureExit?()
+                    _onRestoreUserInterfaceForPictureInPictureStop?()
+                } else {
                     _pipController.stopPictureInPicture()
                 }
             }

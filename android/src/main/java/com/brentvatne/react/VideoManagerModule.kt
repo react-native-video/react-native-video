@@ -1,5 +1,6 @@
 package com.brentvatne.react
 
+import android.os.Build
 import com.brentvatne.common.toolbox.ReactBridgeUtils
 import com.brentvatne.exoplayer.ReactExoplayerView
 import com.facebook.react.bridge.Promise
@@ -66,6 +67,23 @@ class VideoManagerModule(reactContext: ReactApplicationContext?) : ReactContextB
     fun getCurrentPosition(reactTag: Int, promise: Promise) {
         performOnPlayerView(reactTag) {
             it?.getCurrentPosition(promise)
+        }
+    }
+
+    @ReactMethod
+    fun enterPictureInPicture(reactTag: Int) {
+        performOnPlayerView(reactTag) {
+            it?.enterPictureInPictureMode()
+        }
+    }
+
+    @ReactMethod
+    fun exitPictureInPicture(reactTag: Int) {
+        val activity = reactApplicationContext.currentActivity
+        activity?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && it.isInPictureInPictureMode) {
+                it.moveTaskToBack(false)
+            }
         }
     }
 

@@ -4,16 +4,16 @@
 
     class RCTIMAAdsManager: NSObject, IMAAdsLoaderDelegate, IMAAdsManagerDelegate, IMALinkOpenerDelegate {
         private weak var _video: RCTVideo?
-        private var _pipEnabled: () -> Bool
+        private var _isPictureInPictureActive: () -> Bool
 
         /* Entry point for the SDK. Used to make ad requests. */
         private var adsLoader: IMAAdsLoader!
         /* Main point of interaction with the SDK. Created by the SDK as the result of an ad request. */
         private var adsManager: IMAAdsManager!
 
-        init(video: RCTVideo!, pipEnabled: @escaping () -> Bool) {
+        init(video: RCTVideo!, isPictureInPictureActive: @escaping () -> Bool) {
             _video = video
-            _pipEnabled = pipEnabled
+            _isPictureInPictureActive = isPictureInPictureActive
 
             super.init()
         }
@@ -98,7 +98,7 @@
             }
             // Play each ad once it has been loaded
             if event.type == IMAAdEventType.LOADED {
-                if _pipEnabled() {
+                if _isPictureInPictureActive() {
                     return
                 }
                 adsManager.start()

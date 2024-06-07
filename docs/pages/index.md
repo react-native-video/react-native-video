@@ -12,7 +12,7 @@ It allows to stream video files (m3u, mpd, mp4, ...) inside your react native ap
 - Subtitles (embeded or side loaded)
 - DRM support
 - Client side Ads insertion (via google IMA)
-- Pip (ios)
+- Pip
 - Embedded playback controls
 - And much more
 

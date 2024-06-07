@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Handler;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -122,6 +123,14 @@ public class FullScreenPlayerView extends Dialog {
 
         if (reactExoplayerView.getPreventsDisplaySleepDuringVideoPlayback()) {
             mKeepScreenOnHandler.post(mKeepScreenOnUpdater);
+        }
+    }
+
+    public void hideWithoutPlayer() {
+        for (int i = 0; i < containerView.getChildCount(); i++) {
+            if (containerView.getChildAt(i) != exoPlayerView) {
+                containerView.getChildAt(i).setVisibility(View.GONE);
+            }
         }
     }
 

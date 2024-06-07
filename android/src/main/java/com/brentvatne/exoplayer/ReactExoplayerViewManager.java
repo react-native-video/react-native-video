@@ -52,6 +52,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_SELECTED_TEXT_TRACK_VALUE = "value";
     private static final String PROP_TEXT_TRACKS = "textTracks";
     private static final String PROP_PAUSED = "paused";
+    private static final String PROP_ENTER_PICTURE_IN_PICTURE_ON_LEAVE = "enterPictureInPictureOnLeave";
     private static final String PROP_MUTED = "muted";
     private static final String PROP_AUDIO_OUTPUT = "audioOutput";
     private static final String PROP_VOLUME = "volume";
@@ -240,6 +241,11 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     @ReactProp(name = PROP_PAUSED, defaultBoolean = false)
     public void setPaused(final ReactExoplayerView videoView, final boolean paused) {
         videoView.setPausedModifier(paused);
+    }
+
+    @ReactProp(name = PROP_ENTER_PICTURE_IN_PICTURE_ON_LEAVE, defaultBoolean = false)
+    public void setEnterPictureInPictureOnLeave(final ReactExoplayerView videoView, final boolean enterPictureInPictureOnLeave) {
+        videoView.setEnterPictureInPictureOnLeave(enterPictureInPictureOnLeave);
     }
 
     @ReactProp(name = PROP_MUTED, defaultBoolean = false)

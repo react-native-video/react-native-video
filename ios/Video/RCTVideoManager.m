@@ -24,7 +24,7 @@ RCT_EXPORT_VIEW_PROPERTY(playInBackground, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(preventsDisplaySleepDuringVideoPlayback, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(preferredForwardBufferDuration, float);
 RCT_EXPORT_VIEW_PROPERTY(playWhenInactive, BOOL);
-RCT_EXPORT_VIEW_PROPERTY(pictureInPicture, BOOL);
+RCT_EXPORT_VIEW_PROPERTY(enterPictureInPictureOnLeave, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(ignoreSilentSwitch, NSString);
 RCT_EXPORT_VIEW_PROPERTY(mixWithOthers, NSString);
 RCT_EXPORT_VIEW_PROPERTY(rate, float);
@@ -92,4 +92,8 @@ RCT_EXTERN_METHOD(getCurrentPosition
                   : (nonnull NSNumber*)reactTag resolver
                   : (RCTPromiseResolveBlock)resolve rejecter
                   : (RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(enterPictureInPicture : (nonnull NSNumber*)reactTag)
+
+RCT_EXTERN_METHOD(exitPictureInPicture : (nonnull NSNumber*)reactTag)
 @end

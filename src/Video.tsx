@@ -66,6 +66,8 @@ export interface VideoRef {
   save: (options: object) => Promise<VideoSaveData>;
   setVolume: (volume: number) => void;
   getCurrentPosition: () => Promise<number>;
+  enterPictureInPicture: () => void;
+  exitPictureInPicture: () => void;
 }
 
 const Video = forwardRef<VideoRef, ReactVideoProps>(
@@ -261,6 +263,40 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
           // TODO: Implement VideoManager.seek for windows
           nativeRef.current?.setNativeProps({seek: time});
         },
+      })();
+    }, []);
+
+    const enterPictureInPicture = useCallback(async () => {
+      if (!nativeRef.current) {
+        console.warn('Video Component is not mounted');
+        return;
+      }
+
+      const callSeekFunction = () => {
+        VideoManager.enterPictureInPicture(getReactTag(nativeRef));
+      };
+
+      Platform.select({
+        ios: callSeekFunction,
+        android: callSeekFunction,
+        default: () => {},
+      })();
+    }, []);
+
+    const exitPictureInPicture = useCallback(async () => {
+      if (!nativeRef.current) {
+        console.warn('Video Component is not mounted');
+        return;
+      }
+
+      const callSeekFunction = () => {
+        VideoManager.exitPictureInPicture(getReactTag(nativeRef));
+      };
+
+      Platform.select({
+        ios: callSeekFunction,
+        android: callSeekFunction,
+        default: () => {},
       })();
     }, []);
 
@@ -518,6 +554,8 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
         restoreUserInterfaceForPictureInPictureStopCompleted,
         setVolume,
         getCurrentPosition,
+        enterPictureInPicture,
+        exitPictureInPicture,
       }),
       [
         seek,
@@ -529,6 +567,8 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
         restoreUserInterfaceForPictureInPictureStopCompleted,
         setVolume,
         getCurrentPosition,
+        enterPictureInPicture,
+        exitPictureInPicture,
       ],
     );
 
