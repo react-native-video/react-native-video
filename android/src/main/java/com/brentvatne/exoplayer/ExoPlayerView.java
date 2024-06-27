@@ -1,5 +1,6 @@
 package com.brentvatne.exoplayer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -15,7 +16,6 @@ import androidx.media3.common.util.Assertions;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.SubtitleView;
 
-import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
+@SuppressLint("ViewConstructor")
 public final class ExoPlayerView extends FrameLayout implements AdViewProvider {
     private final static String TAG = "ExoPlayerView";
     private View surfaceView;
@@ -48,15 +49,7 @@ public final class ExoPlayerView extends FrameLayout implements AdViewProvider {
     private boolean hideShutterView = false;
 
     public ExoPlayerView(Context context) {
-        this(context, null);
-    }
-
-    public ExoPlayerView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        super(context, null, 0);
 
         this.context = context;
 
@@ -214,7 +207,7 @@ public final class ExoPlayerView extends FrameLayout implements AdViewProvider {
      * @param resizeMode The resize mode.
      */
     public void setResizeMode(@ResizeMode.Mode int resizeMode) {
-        if (layout.getResizeMode() != resizeMode) {
+        if (layout != null && layout.getResizeMode() != resizeMode) {
             layout.setResizeMode(resizeMode);
             post(measureAndLayout);
         }

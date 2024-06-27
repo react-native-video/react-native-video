@@ -210,6 +210,9 @@ Determines if the player needs to throw an error when connection is lost or not
 
 ### `drm`
 
+> [!WARNING]
+> deprecated, use source.drm instead
+
 <PlatformsList types={['Android', 'iOS']} />
 
 To setup DRM please follow [this guide](/component/drm)
@@ -727,6 +730,29 @@ type: 'mpd' }}
 
 The following other types are supported on some platforms, but aren't fully documented yet:
 `content://, ms-appx://, ms-appdata://, assets-library://`
+
+#### Using DRM content
+
+<PlatformsList types={['Android', 'iOS']} />
+
+To setup DRM please follow [this guide](/component/drm)
+
+Example:
+
+```javascript
+    {
+      description: 'WV: Secure SD & HD (cbcs,MP4,H264)',
+      uri: 'https://storage.googleapis.com/wvmedia/cbcs/h264/tears/tears_aes_cbcs.mpd',
+      drm: {
+        type: DRMType.WIDEVINE,
+        licenseServer:
+          'https://proxy.uat.widevine.com/proxy?provider=widevine_test',
+      },
+    },
+```
+
+> ⚠️ DRM is not supported on visionOS yet
+
 
 #### Start playback at a specific point in time
 
