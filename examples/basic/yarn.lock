@@ -7638,6 +7638,10 @@ md5hex@^1.0.0:
   resolved "https://registry.yarnpkg.com/md5hex/-/md5hex-1.0.0.tgz#ed74b477a2ee9369f75efee2f08d5915e52a42e8"
   integrity sha512-c2YOUbp33+6thdCUi34xIyOU/a7bvGKj/3DB1iaPMTuPHf/Q2d5s4sn1FaCOO43XkXggnb08y5W2PU8UNYNLKQ==
 
+"media@https://github.com/freeboub/media#de9a580ef23c138e3f6aee36c8f056ed5d758bce":
+  version "0.0.0"
+  resolved "https://github.com/freeboub/media#de9a580ef23c138e3f6aee36c8f056ed5d758bce"
+
 mem@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/mem/-/mem-4.3.0.tgz#461af497bc4ae09608cdb2e60eefb69bff744178"

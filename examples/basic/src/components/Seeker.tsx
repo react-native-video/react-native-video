@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {PanResponder, View} from 'react-native';
+import {Image, PanResponder, View} from 'react-native';
 import styles from '../styles';
 
 interface SeekerProps {
@@ -16,10 +16,12 @@ const Seeker = ({
   isLoading,
   isUISeeking,
   videoSeek,
+  thumbnailData,
 }: SeekerProps) => {
   const [seeking, setSeeking] = useState(false);
   const [seekerPosition, setSeekerPosition] = useState(0);
   const [seekerWidth, setSeekerWidth] = useState(0);
+  const percent = currentTime / duration;
 
   /**
    * Set the position of the seekbar's components
@@ -99,7 +101,6 @@ const Seeker = ({
 
   useEffect(() => {
     if (!isLoading && !seeking && !isUISeeking) {
-      const percent = currentTime / duration;
       const position = seekerWidth * percent;
       updateSeekerPosition(position);
     }
@@ -133,7 +134,42 @@ const Seeker = ({
 
   const seekerPointerStyle = [styles.seekbarCircle, {backgroundColor: '#FFF'}];
 
+  // Image:
+  // 1024 x 1152
+  // 10 x 20
+  // duration total
+
+  const {imageWidth, imageHeight, url: posterUrl, tileCountVertical: tileHeightCount, tileCountHorizontal: tileWidthCount} = thumbnailData || {}
+
+  // const imageWidth = 1024
+  // const imageHeight = 1152
+
+  // const tileWidthCount = 10
+  // const tileHeightCount = 20
+
+  // const posterUrl = 'https://dash.akamaized.net/akamai/bbb_30fps/thumbnails_102x58/tile_1.jpg'
+
+   const tileCount = tileWidthCount * tileHeightCount
+
+   const tileWidth = imageWidth / tileWidthCount
+   const tileHeight = imageHeight / tileHeightCount
+
+   const tileindex = Math.floor((tileCount * percent))
+  const topId = Math.floor(tileindex / tileWidthCount)
+  const leftId = tileindex % tileWidthCount
+  const top = -(topId * tileHeight)
+  const left = -(leftId * tileWidth)
+
+  // set the tile close to the poiunter
+  const tileOffset = seekerPosition - tileWidth / 2
+
   return (
+    <>
+    {Number.isFinite(tileindex) && Number.isFinite(top) && Number.isFinite(left) && Number.isFinite(tileOffset)? 
+    <View style={{ width: tileWidth, height: tileHeight, left: tileOffset, overflow: 'hidden' }}>
+        <Image source={{uri: posterUrl}} style={{top, left, width: imageWidth, height: imageHeight}}/>
+    </View>
+    : null}
     <View
       style={styles.seekbarContainer}
       {...seekPanResponder.panHandlers}
@@ -148,6 +184,7 @@ const Seeker = ({
         <View style={seekerPointerStyle} pointerEvents={'none'} />
       </View>
     </View>
+    </>
   );
 };
 

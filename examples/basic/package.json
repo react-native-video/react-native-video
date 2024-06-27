@@ -17,6 +17,7 @@
     "expo": "^51.0.14",
     "expo-asset": "^10.0.9",
     "expo-image": "^1.12.12",
+    "media": "https://github.com/freeboub/media#de9a580ef23c138e3f6aee36c8f056ed5d758bce",
     "react": "18.2.0",
     "react-native": "0.74.2",
     "react-native-windows": "0.74.1"

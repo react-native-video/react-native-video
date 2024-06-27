@@ -10,6 +10,8 @@ import {
   ToastAndroid,
   Platform,
   Alert,
+  NativeModules,
+  NativeEventEmitter,
 } from 'react-native';
 
 import Video, {
@@ -91,6 +93,8 @@ interface StateType {
   isSeeking: boolean;
 }
 
+let eventEmitter
+
 class VideoPlayer extends Component {
   state: StateType = {
     rate: 1,
@@ -128,7 +132,11 @@ class VideoPlayer extends Component {
   srcAllPlatformList = [
     {
       description: 'local file landscape',
-      uri: require('./broadchurch.mp4'),
+      uri: 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_with_multiple_tiled_thumbnails.mpd',
+      // uri: 'https://cdn.theoplayer.com/video/big_buck_bunny/big_buck_bunny.m3u8',
+      //uri: 'https://demo.unified-streaming.com/k8s/features/stable/no-handler-origin/tears-of-steel/tears-of-steel-tiled-thumbnails-static.mpd',
+      // uri: 'https://demo.unified-streaming.com/k8s/features/stable/no-handler-origin/tears-of-steel/tears-of-steel-tiled-thumbnails.cmfv',
+      type: 'mpd',
     },
     {
       description: 'local file landscape cropped',
@@ -489,6 +497,7 @@ class VideoPlayer extends Component {
         isLoading={this.state.isLoading}
         videoSeek={prop => this.videoSeek(prop)}
         isUISeeking={this.state.isSeeking}
+        thumbnailData={this.state.thumbnailData}
       />
     );
   }
@@ -581,6 +590,17 @@ class VideoPlayer extends Component {
       });
     }
   };
+
+  componentDidMount() {
+    eventEmitter = new NativeEventEmitter(NativeModules.VideoPluginSample);
+
+    eventEmitter.addListener("ImageDataAvailable", (res) => {
+      console.log('ImageDataAvailable ', res);
+      this.setState({
+        thumbnailData: res,
+      })
+    });
+  }
 
   renderOverlay() {
     return (

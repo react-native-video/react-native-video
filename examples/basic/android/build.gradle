@@ -18,7 +18,7 @@ buildscript {
         // useExoplayerHls = false
 
         // uncomment this line to be able to build from media3 source code
-        // buildFromMedia3Source = true
+        buildFromMedia3Source = true
     }
     repositories {
         google()
