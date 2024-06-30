@@ -267,12 +267,12 @@ type OnReceiveAdEventData = Readonly<{
 
 export type OnVideoErrorData = Readonly<{
   error: Readonly<{
-    errorString?: string; // android
+    errorString?: string; // android | web
     errorException?: string; // android
     errorStackTrace?: string; // android
     errorCode?: string; // android
     error?: string; // ios
-    code?: Int32; // ios
+    code?: Int32; // ios | web
     localizedDescription?: string; // ios
     localizedFailureReason?: string; // ios
     localizedRecoverySuggestion?: string; // ios

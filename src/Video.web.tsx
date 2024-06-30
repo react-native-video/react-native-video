@@ -4,8 +4,10 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
+  type RefObject,
+  useMemo,
 } from 'react';
-import type {VideoRef, ReactVideoProps} from './types';
+import type {VideoRef, ReactVideoProps, VideoMetadata} from './types';
 
 const Video = forwardRef<VideoRef, ReactVideoProps>(
   (
@@ -17,7 +19,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       rate,
       repeat,
       controls,
-      showNotificationControls,
+      showNotificationControls = false,
       poster,
       onBuffer,
       onLoad,
@@ -45,6 +47,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
           console.warn('Video Component is not mounted');
           return;
         }
+        time = Math.max(0, Math.min(time, nativeRef.current.duration));
         nativeRef.current.currentTime = time;
         onSeek?.({seekTime: time, currentTime: nativeRef.current.currentTime});
       },
@@ -98,8 +101,17 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
         setFullScreen: unsupported,
         save: unsupported,
         restoreUserInterfaceForPictureInPictureStopCompleted: unsupported,
+        nativeHtmlRef: nativeRef,
       }),
-      [seek, pause, resume, unsupported, setVolume, getCurrentPosition],
+      [
+        seek,
+        pause,
+        resume,
+        unsupported,
+        setVolume,
+        getCurrentPosition,
+        nativeRef,
+      ],
     );
 
     useEffect(() => {
@@ -137,95 +149,188 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       nativeRef.current.playbackRate = rate;
     }, [rate]);
 
+    useMediaSession(
+      source?.metadata,
+      nativeRef,
+      useMemo(
+        () => ({
+          seek,
+          resume,
+          pause,
+        }),
+        [seek, resume, pause],
+      ),
+      showNotificationControls,
+    );
+
     return (
-      <>
-        {showNotificationControls && (
-          <MediaSessionManager {...source.metadata} />
-        )}
-        <video
-          ref={nativeRef}
-          src={source.uri as string | undefined}
-          muted={muted}
-          autoPlay={!paused}
-          controls={controls}
-          loop={repeat}
-          playsInline
-          poster={poster}
-          onCanPlay={() => onBuffer?.({isBuffering: false})}
-          onWaiting={() => onBuffer?.({isBuffering: true})}
-          onRateChange={() => {
-            if (!nativeRef.current) {
-              return;
-            }
-            onPlaybackRateChange?.({
-              playbackRate: nativeRef.current?.playbackRate,
-            });
-          }}
-          onDurationChange={() => {
-            if (!nativeRef.current) {
-              return;
-            }
-            onLoad?.({
-              currentTime: nativeRef.current.currentTime,
-              duration: nativeRef.current.duration,
-              videoTracks: [],
-              textTracks: [],
-              audioTracks: [],
-              naturalSize: {
-                width: nativeRef.current.videoWidth,
-                height: nativeRef.current.videoHeight,
-                orientation: 'landscape',
-              },
-            });
-          }}
-          onTimeUpdate={() => {
-            if (!nativeRef.current) {
-              return;
-            }
-            onProgress?.({
-              currentTime: nativeRef.current.currentTime,
-              playableDuration: nativeRef.current.buffered.length
-                ? nativeRef.current.buffered.end(
-                    nativeRef.current.buffered.length - 1,
-                  )
-                : 0,
-              seekableDuration: 0,
-            });
-          }}
-          onLoadedData={() => onReadyForDisplay?.()}
-          onError={() => {
-            if (
-              nativeRef?.current?.error?.code ===
-              MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
-            )
-              onMediaUnsupported?.call(undefined);
-            else {
-              onError?.call(null, {
-                error: {
-                  errorString:
-                    nativeRef.current?.error?.message ?? 'Unknown error',
-                },
-              });
-            }
-          }}
-          onLoadedMetadata={() => {
-            if (source.startPosition) seek(source.startPosition / 1000);
-          }}
-          onPlay={() => onPlaybackStateChanged?.({isPlaying: true})}
-          onPause={() => onPlaybackStateChanged?.({isPlaying: false})}
-          onVolumeChange={() => {
-            if (!nativeRef.current) {
-              return;
-            }
-            onVolumeChange?.({volume: nativeRef.current.volume});
-          }}
-          onEnded={onEnd}
-          style={{position: 'absolute', inset: 0, objectFit: 'contain'}}
-        />
-      </>
+      <video
+        ref={nativeRef}
+        src={source?.uri as string | undefined}
+        muted={muted}
+        autoPlay={!paused}
+        controls={controls}
+        loop={repeat}
+        playsInline
+        poster={poster}
+        onCanPlay={() => onBuffer?.({isBuffering: false})}
+        onWaiting={() => onBuffer?.({isBuffering: true})}
+        onRateChange={() => {
+          if (!nativeRef.current) {
+            return;
+          }
+          onPlaybackRateChange?.({
+            playbackRate: nativeRef.current?.playbackRate,
+          });
+        }}
+        onDurationChange={() => {
+          if (!nativeRef.current) {
+            return;
+          }
+          onLoad?.({
+            currentTime: nativeRef.current.currentTime,
+            duration: nativeRef.current.duration,
+            videoTracks: [],
+            textTracks: [],
+            audioTracks: [],
+            naturalSize: {
+              width: nativeRef.current.videoWidth,
+              height: nativeRef.current.videoHeight,
+              orientation: 'landscape',
+            },
+          });
+        }}
+        onTimeUpdate={() => {
+          if (!nativeRef.current) {
+            return;
+          }
+          onProgress?.({
+            currentTime: nativeRef.current.currentTime,
+            playableDuration: nativeRef.current.buffered.length
+              ? nativeRef.current.buffered.end(
+                  nativeRef.current.buffered.length - 1,
+                )
+              : 0,
+            seekableDuration: 0,
+          });
+        }}
+        onLoadedData={() => onReadyForDisplay?.()}
+        onError={() => {
+          if (!nativeRef.current?.error) {
+            return;
+          }
+          onError?.({
+            error: {
+              errorString: nativeRef.current.error.message ?? 'Unknown error',
+              code: nativeRef.current.error.code,
+            },
+          });
+        }}
+        onLoadedMetadata={() => {
+          if (source?.startPosition) {
+            seek(source.startPosition / 1000);
+          }
+        }}
+        onPlay={() => onPlaybackStateChanged?.({isPlaying: true})}
+        onPause={() => onPlaybackStateChanged?.({isPlaying: false})}
+        onVolumeChange={() => {
+          if (!nativeRef.current) {
+            return;
+          }
+          onVolumeChange?.({volume: nativeRef.current.volume});
+        }}
+        onEnded={onEnd}
+        style={{position: 'absolute', inset: 0, objectFit: 'contain'}}
+      />
     );
   },
 );
+
+const useMediaSession = (
+  metadata: VideoMetadata | undefined,
+  nativeRef: RefObject<HTMLVideoElement>,
+  actions: {
+    seek: (time: number) => void;
+    pause: () => void;
+    resume: () => void;
+  },
+  showNotification: boolean,
+) => {
+  const isPlaying = !nativeRef.current?.paused ?? false;
+  const progress = nativeRef.current?.currentTime ?? 0;
+  const duration = nativeRef.current?.duration ?? 100;
+  const playbackRate = nativeRef.current?.playbackRate ?? 1;
+
+  const enabled = 'mediaSession' in navigator && showNotification;
+
+  useEffect(() => {
+    if (enabled) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: metadata?.title,
+        artist: metadata?.artist,
+        artwork: metadata?.imageUri ? [{src: metadata.imageUri}] : undefined,
+      });
+    }
+  }, [enabled, metadata]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    const seekRelative = (offset: number) => {
+      if (!nativeRef.current) {
+        return;
+      }
+      actions.seek(nativeRef.current.currentTime + offset);
+    };
+
+    const mediaActions: [
+      MediaSessionAction,
+      MediaSessionActionHandler | null,
+    ][] = [
+      ['play', () => actions.resume()],
+      ['pause', () => actions.pause()],
+      [
+        'seekbackward',
+        (evt: MediaSessionActionDetails) =>
+          seekRelative(evt.seekOffset ? -evt.seekOffset : -10),
+      ],
+      [
+        'seekforward',
+        (evt: MediaSessionActionDetails) =>
+          seekRelative(evt.seekOffset ? evt.seekOffset : 10),
+      ],
+      [
+        'seekto',
+        (evt: MediaSessionActionDetails) => actions.seek(evt.seekTime!),
+      ],
+    ];
+
+    for (const [action, handler] of mediaActions) {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {
+        // ignored
+      }
+    }
+  }, [enabled, nativeRef, actions]);
+
+  useEffect(() => {
+    if (enabled) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    }
+  }, [isPlaying, enabled]);
+  useEffect(() => {
+    if (enabled && duration !== undefined) {
+      navigator.mediaSession.setPositionState({
+        position: Math.min(progress, duration),
+        duration,
+        playbackRate: playbackRate,
+      });
+    }
+  }, [progress, duration, playbackRate, enabled]);
+};
 
 Video.displayName = 'Video';
 export default Video;
