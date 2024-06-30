@@ -14,10 +14,15 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       paused,
       muted,
       volume,
+      showNotificationControls,
       onBuffer,
       onLoad,
       onProgress,
+      onPlaybackRateChange,
       onError,
+      onReadyForDisplay,
+      onSeek,
+      onVolumeChange,
       onEnd,
       onPlaybackStateChanged,
     },
@@ -27,16 +32,20 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
     const errorHandler = useRef<typeof onError>(onError);
     errorHandler.current = onError;
 
-    const seek = useCallback(async (time: number, _tolerance?: number) => {
-      if (isNaN(time)) {
-        throw new Error('Specified time is not a number');
-      }
-      if (!nativeRef.current) {
-        console.warn('Video Component is not mounted');
-        return;
-      }
-      nativeRef.current.currentTime = time;
-    }, []);
+    const seek = useCallback(
+      async (time: number, _tolerance?: number) => {
+        if (isNaN(time)) {
+          throw new Error('Specified time is not a number');
+        }
+        if (!nativeRef.current) {
+          console.warn('Video Component is not mounted');
+          return;
+        }
+        nativeRef.current.currentTime = time;
+        onSeek?.({seekTime: time, currentTime: nativeRef.current.currentTime});
+      },
+      [onSeek],
+    );
 
     const pause = useCallback(() => {
       if (!nativeRef.current) {
@@ -52,6 +61,20 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       nativeRef.current.play();
     }, []);
 
+    const setVolume = useCallback((vol: number) => {
+      if (!nativeRef.current) {
+        return;
+      }
+      nativeRef.current.volume = Math.max(0, Math.min(vol, 100)) / 100;
+    }, []);
+
+    const getCurrentPosition = useCallback(async () => {
+      if (!nativeRef.current) {
+        throw new Error('Video Component is not mounted');
+      }
+      return nativeRef.current.currentTime;
+    }, []);
+
     const unsupported = useCallback(() => {
       throw new Error('This is unsupported on the web');
     }, []);
@@ -62,14 +85,17 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
         seek,
         pause,
         resume,
+        setVolume,
+        getCurrentPosition,
         // making the video fullscreen does not work with some subtitles polyfils
         // so I decided to not include it.
         presentFullscreenPlayer: unsupported,
         dismissFullscreenPlayer: unsupported,
+        setFullScreen: unsupported,
         save: unsupported,
         restoreUserInterfaceForPictureInPictureStopCompleted: unsupported,
       }),
-      [seek, pause, resume, unsupported],
+      [seek, pause, resume, unsupported, setVolume, getCurrentPosition],
     );
 
     useEffect(() => {
@@ -80,24 +106,31 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       }
     }, [paused, pause, resume]);
     useEffect(() => {
-      if (!nativeRef.current || !volume) {
+      if (volume === undefined) {
         return;
       }
-      nativeRef.current.volume = Math.max(0, Math.min(volume, 100)) / 100;
-    }, [volume]);
+      setVolume(volume);
+    }, [volume, setVolume]);
 
-    const setPlay = useSetAtom(playAtom);
     useEffect(() => {
-      if (!nativeRef.current) return;
-      // Set play state to the player's value (if autoplay is denied)
-      setPlay(!nativeRef.current.paused);
-    }, [setPlay]);
+      // Not sure about how to do this but we want to wait for nativeRef to be initialized
+      setTimeout(() => {
+        if (!nativeRef.current) {
+          return;
+        }
 
-    const setProgress = useSetAtom(progressAtom);
+        // Set play state to the player's value (if autoplay is denied)
+        // This is useful if our UI is in a play state but autoplay got denied so
+        // the video is actaully in a paused state.
+        onPlaybackStateChanged?.({isPlaying: !nativeRef.current.paused});
+      }, 500);
+    }, [onPlaybackStateChanged]);
 
     return (
       <>
-        <MediaSessionManager {...source.metadata} />
+        {showNotificationControls && (
+          <MediaSessionManager {...source.metadata} />
+        )}
         <video
           ref={nativeRef}
           src={source.uri as string | undefined}
@@ -107,11 +140,30 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
           playsInline
           onCanPlay={() => onBuffer?.({isBuffering: false})}
           onWaiting={() => onBuffer?.({isBuffering: true})}
+          onRateChange={() => {
+            if (!nativeRef.current) {
+              return;
+            }
+            onPlaybackRateChange?.({
+              playbackRate: nativeRef.current?.playbackRate,
+            });
+          }}
           onDurationChange={() => {
             if (!nativeRef.current) {
               return;
             }
-            onLoad?.({duration: nativeRef.current.duration} as any);
+            onLoad?.({
+              currentTime: nativeRef.current.currentTime,
+              duration: nativeRef.current.duration,
+              videoTracks: [],
+              textTracks: [],
+              audioTracks: [],
+              naturalSize: {
+                width: nativeRef.current.videoWidth,
+                height: nativeRef.current.videoHeight,
+                orientation: 'landscape',
+              },
+            });
           }}
           onTimeUpdate={() => {
             if (!nativeRef.current) {
@@ -127,6 +179,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
               seekableDuration: 0,
             });
           }}
+          onLoadedData={() => onReadyForDisplay?.()}
           onError={() => {
             if (
               nativeRef?.current?.error?.code ===
@@ -147,6 +200,12 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
           }}
           onPlay={() => onPlaybackStateChanged?.({isPlaying: true})}
           onPause={() => onPlaybackStateChanged?.({isPlaying: false})}
+          onVolumeChange={() => {
+            if (!nativeRef.current) {
+              return;
+            }
+            onVolumeChange?.({volume: nativeRef.current.volume});
+          }}
           onEnded={onEnd}
           style={{position: 'absolute', inset: 0, objectFit: 'contain'}}
         />
