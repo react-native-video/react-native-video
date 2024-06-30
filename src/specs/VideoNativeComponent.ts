@@ -8,6 +8,7 @@ import type {
   Int32,
   WithDefault,
 } from 'react-native/Libraries/Types/CodegenTypes';
+import type {VideoSaveData} from '../types/video-ref';
 
 // -------- There are types for native component (future codegen) --------
 // if you are looking for types for react component, see src/types/video.ts
@@ -374,10 +375,6 @@ export interface VideoNativeProps extends ViewProps {
 }
 
 export type VideoComponentType = HostComponent<VideoNativeProps>;
-
-export type VideoSaveData = {
-  uri: string;
-};
 
 export interface VideoManagerType {
   save: (option: object, reactTag: number) => Promise<VideoSaveData>;
