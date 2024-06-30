@@ -14,7 +14,11 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       paused,
       muted,
       volume,
+      rate,
+      repeat,
+      controls,
       showNotificationControls,
+      poster,
       onBuffer,
       onLoad,
       onProgress,
@@ -126,6 +130,13 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       }, 500);
     }, [onPlaybackStateChanged]);
 
+    useEffect(() => {
+      if (!nativeRef.current || rate === undefined) {
+        return;
+      }
+      nativeRef.current.playbackRate = rate;
+    }, [rate]);
+
     return (
       <>
         {showNotificationControls && (
@@ -136,8 +147,10 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
           src={source.uri as string | undefined}
           muted={muted}
           autoPlay={!paused}
-          controls={false}
+          controls={controls}
+          loop={repeat}
           playsInline
+          poster={poster}
           onCanPlay={() => onBuffer?.({isBuffering: false})}
           onWaiting={() => onBuffer?.({isBuffering: true})}
           onRateChange={() => {
@@ -196,7 +209,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
             }
           }}
           onLoadedMetadata={() => {
-            if (source.startPosition) setProgress(source.startPosition / 1000);
+            if (source.startPosition) seek(source.startPosition / 1000);
           }}
           onPlay={() => onPlaybackStateChanged?.({isPlaying: true})}
           onPause={() => onPlaybackStateChanged?.({isPlaying: false})}
