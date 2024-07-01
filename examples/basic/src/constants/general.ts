@@ -70,6 +70,14 @@ export const srcAllPlatformList = [
     description: 'another bunny (can be saved)',
     uri: 'https://rawgit.com/mediaelement/mediaelement-files/master/big_buck_bunny.mp4',
     headers: {referer: 'www.github.com', 'User-Agent': 'react.native.video'},
+    metadata: {
+      title: 'Custom Title',
+      subtitle: 'Custom Subtitle',
+      artist: 'Custom Artist',
+      description: 'Custom Description',
+      imageUri:
+        'https://pbs.twimg.com/profile_images/1498641868397191170/6qW2XkuI_400x400.png',
+    },
   },
   {
     description: 'sintel with subtitles',
