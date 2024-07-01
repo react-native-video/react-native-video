@@ -5,7 +5,6 @@ import React, {
   useImperativeHandle,
   useRef,
   type RefObject,
-  useMemo,
 } from 'react';
 import type {VideoRef, ReactVideoProps, VideoMetadata} from './types';
 

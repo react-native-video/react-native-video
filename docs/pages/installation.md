@@ -175,3 +175,12 @@ Select RCTVideo-tvOS
 Run `pod install` in the `visionos` directory of your project
 
 </details>
+
+<details>
+<summary>web</summary>
+
+Nothing to do, everything should work out of the box.
+
+Note that only basic video support is present, no hls/dash or ads/drm for now.
+
+</details>
