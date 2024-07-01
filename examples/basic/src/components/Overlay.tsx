@@ -20,14 +20,12 @@ import {
   VideoRef,
 } from 'react-native-video';
 import {StateType} from '../types';
-import {
-  toast,
-  Seeker,
-  AudioTrackSelector,
-  TextTrackSelector,
-  VideoTrackSelector,
-  TopControl,
-} from '../components';
+import {toast} from './Toast';
+import {Seeker} from './Seeker';
+import {AudioTrackSelector} from './AudioTracksSelector';
+import {TextTrackSelector} from './TextTracksSelector';
+import {VideoTrackSelector} from './VideoTracksSelector';
+import {TopControl} from './TopControl';
 
 type Props = {
   channelDown: () => void;
