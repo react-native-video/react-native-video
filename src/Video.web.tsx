@@ -149,19 +149,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       nativeRef.current.playbackRate = rate;
     }, [rate]);
 
-    useMediaSession(
-      source?.metadata,
-      nativeRef,
-      useMemo(
-        () => ({
-          seek,
-          resume,
-          pause,
-        }),
-        [seek, resume, pause],
-      ),
-      showNotificationControls,
-    );
+    useMediaSession(source?.metadata, nativeRef, showNotificationControls);
 
     return (
       <video
@@ -255,11 +243,6 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
 const useMediaSession = (
   metadata: VideoMetadata | undefined,
   nativeRef: RefObject<HTMLVideoElement>,
-  actions: {
-    seek: (time: number) => void;
-    pause: () => void;
-    resume: () => void;
-  },
   showNotification: boolean,
 ) => {
   const isPlaying = !nativeRef.current?.paused ?? false;
@@ -286,19 +269,24 @@ const useMediaSession = (
       return;
     }
 
-    const seekRelative = (offset: number) => {
-      if (!nativeRef.current) {
-        return;
+    const seekTo = (time: number) => {
+      if (nativeRef.current) {
+        nativeRef.current.currentTime = time;
       }
-      actions.seek(nativeRef.current.currentTime + offset);
+    };
+
+    const seekRelative = (offset: number) => {
+      if (nativeRef.current) {
+        nativeRef.current.currentTime = nativeRef.current.currentTime + offset;
+      }
     };
 
     const mediaActions: [
       MediaSessionAction,
       MediaSessionActionHandler | null,
     ][] = [
-      ['play', () => actions.resume()],
-      ['pause', () => actions.pause()],
+      ['play', () => nativeRef.current?.play()],
+      ['pause', () => nativeRef.current?.pause()],
       [
         'seekbackward',
         (evt: MediaSessionActionDetails) =>
@@ -309,10 +297,7 @@ const useMediaSession = (
         (evt: MediaSessionActionDetails) =>
           seekRelative(evt.seekOffset ? evt.seekOffset : 10),
       ],
-      [
-        'seekto',
-        (evt: MediaSessionActionDetails) => actions.seek(evt.seekTime!),
-      ],
+      ['seekto', (evt: MediaSessionActionDetails) => seekTo(evt.seekTime!)],
     ];
 
     for (const [action, handler] of mediaActions) {
@@ -322,7 +307,7 @@ const useMediaSession = (
         // ignored
       }
     }
-  }, [enabled, nativeRef, actions]);
+  }, [enabled, nativeRef]);
 
   useEffect(() => {
     if (enabled) {
