@@ -127,6 +127,9 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
       setVolume(volume);
     }, [volume, setVolume]);
 
+    // we use a ref to prevent triggerring the useEffect when the component rerender with a non-stable `onPlaybackStateChanged`.
+    const playbackStateRef = useRef(onPlaybackStateChanged);
+    playbackStateRef.current = onPlaybackStateChanged;
     useEffect(() => {
       // Not sure about how to do this but we want to wait for nativeRef to be initialized
       setTimeout(() => {
@@ -137,9 +140,9 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
         // Set play state to the player's value (if autoplay is denied)
         // This is useful if our UI is in a play state but autoplay got denied so
         // the video is actaully in a paused state.
-        onPlaybackStateChanged?.({isPlaying: !nativeRef.current.paused});
+        playbackStateRef.current?.({isPlaying: !nativeRef.current.paused});
       }, 500);
-    }, [onPlaybackStateChanged]);
+    }, []);
 
     useEffect(() => {
       if (!nativeRef.current || rate === undefined) {
