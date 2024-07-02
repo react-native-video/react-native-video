@@ -968,7 +968,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
     @objc
     func setFullscreen(_ fullscreen: Bool) {
-        if fullscreen && !_fullscreenPlayerPresented && _player != nil {
+        var alreadyFullscreenPresented = _presentingViewController?.presentedViewController != nil
+        if fullscreen && !_fullscreenPlayerPresented && _player != nil && !alreadyFullscreenPresented {
             // Ensure player view controller is not null
             // Controls will be displayed even if it is disabled in configuration
             if _playerViewController == nil {
