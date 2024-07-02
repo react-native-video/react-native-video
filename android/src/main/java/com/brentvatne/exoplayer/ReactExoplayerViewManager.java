@@ -18,13 +18,12 @@ import com.brentvatne.common.api.SideLoadedTextTrackList;
 import com.brentvatne.common.api.Source;
 import com.brentvatne.common.api.SubtitleStyle;
 import com.brentvatne.common.api.ViewType;
-import com.brentvatne.common.react.VideoEventEmitter;
+import com.brentvatne.common.react.EventTypes;
 import com.brentvatne.common.toolbox.DebugLog;
 import com.brentvatne.common.toolbox.ReactBridgeUtils;
 import com.brentvatne.react.ReactNativeVideoManager;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -110,11 +109,13 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
 
     @Override
     public @Nullable Map<String, Object> getExportedCustomDirectEventTypeConstants() {
-        MapBuilder.Builder<String, Object> builder = MapBuilder.builder();
-        for (String event : VideoEventEmitter.Events) {
-            builder.put(event, MapBuilder.of("registrationName", event));
-        }
-        return builder.build();
+        return EventTypes.Companion.toMap();
+    }
+
+    @Override
+    public void addEventEmitters(@NonNull ThemedReactContext reactContext, @NonNull ReactExoplayerView view) {
+        super.addEventEmitters(reactContext, view);
+        view.eventEmitter.addEventEmitters(reactContext, view);
     }
 
     @ReactProp(name = PROP_DRM)
