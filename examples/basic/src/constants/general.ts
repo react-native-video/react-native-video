@@ -2,11 +2,9 @@ import {
   BufferConfig,
   DRMType,
   ISO639_1,
-  ResizeMode,
-  SelectedVideoTrackType,
   TextTrackType,
 } from 'react-native-video';
-import {SampleVideoSource, StateType} from '../types';
+import {SampleVideoSource} from '../types';
 import {localeVideo} from '../assets';
 import {Platform} from 'react-native';
 
@@ -159,36 +157,6 @@ export const srcList: SampleVideoSource[] = srcAllPlatformList.concat(
   isAndroid ? srcAndroidList : srcIosList,
 );
 
-export const defaultValue: StateType = {
-  rate: 1,
-  volume: 1,
-  muted: false,
-  resizeMode: ResizeMode.CONTAIN,
-  duration: 0.0,
-  currentTime: 0.0,
-  videoWidth: 0,
-  videoHeight: 0,
-  paused: false,
-  fullscreen: true,
-  decoration: true,
-  isLoading: false,
-  audioTracks: [],
-  textTracks: [],
-  videoTracks: [],
-  selectedAudioTrack: undefined,
-  selectedTextTrack: undefined,
-  selectedVideoTrack: {
-    type: SelectedVideoTrackType.AUTO,
-  },
-  srcListId: 0,
-  loop: false,
-  showRNVControls: false,
-  useCache: false,
-  poster: undefined,
-  showNotificationControls: false,
-  isSeeking: false,
-};
-
 export const bufferConfig: BufferConfig = {
   minBufferMs: 15000,
   maxBufferMs: 50000,
@@ -197,4 +165,4 @@ export const bufferConfig: BufferConfig = {
   live: {
     targetOffsetMs: 500,
   },
-}
+};
