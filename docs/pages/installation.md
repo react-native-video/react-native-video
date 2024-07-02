@@ -49,6 +49,8 @@ To enable google IMA usage define add following line in your podfile:
 $RNVideoUseGoogleIMA=true
 ```
 
+**If you are using Expo you can use [expo plugin](other/expo.md) for it**
+
 </details>
 <details>
 <summary>Android</summary>
@@ -66,6 +68,8 @@ buildscript {
 ```
 
 ### Enable custom feature in gradle file
+
+**If you are using Expo you can use [expo plugin](other/expo.md) for it**
 
 You can disable or enable the following features by setting the following variables in your `android/build.gradle` file:
 - `useExoplayerIMA` - Enable Google IMA SDK (Ads support)

@@ -15,8 +15,11 @@ buildscript {
     }
 }
 
+// This looks funny but it's necessary to keep backwards compatibility (: 
 def safeExtGet(prop) {
-    return rootProject.ext.has(prop) ? rootProject.ext.get(prop) : project.properties["RNVideo_" + prop]
+    return rootProject.ext.has(prop) ?
+            rootProject.ext.get(prop) : rootProject.ext.has("RNVideo_" + prop) ?
+            rootProject.ext.get("RNVideo_" + prop) : project.properties["RNVideo_" + prop]
 }
 
 def isNewArchitectureEnabled() {
