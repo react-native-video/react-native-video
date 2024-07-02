@@ -9,7 +9,7 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
-class ReactVideoPackage @JvmOverloads constructor(private var config: ReactExoplayerConfig? = null) : ReactPackage {
+class ReactVideoPackage(private val config: ReactExoplayerConfig? = null) : ReactPackage {
 
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
         listOf(
@@ -21,9 +21,7 @@ class ReactVideoPackage @JvmOverloads constructor(private var config: ReactExopl
     fun createJSModules(): List<Class<out JavaScriptModule>> = emptyList()
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        if (config == null) {
-            config = DefaultReactExoplayerConfig(reactContext)
-        }
-        return listOf(ReactExoplayerViewManager(config!!))
+        val effectiveConfig = config ?: DefaultReactExoplayerConfig(reactContext)
+        return listOf(ReactExoplayerViewManager(effectiveConfig))
     }
 }
