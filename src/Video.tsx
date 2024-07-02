@@ -49,27 +49,9 @@ import {
   type OnTextTracksData,
   type OnReceiveAdEventData,
   type ReactVideoProps,
+  type VideoRef,
   ViewType,
 } from './types';
-
-export type VideoSaveData = {
-  uri: string;
-};
-
-export interface VideoRef {
-  seek: (time: number, tolerance?: number) => void;
-  resume: () => void;
-  pause: () => void;
-  presentFullscreenPlayer: () => void;
-  dismissFullscreenPlayer: () => void;
-  restoreUserInterfaceForPictureInPictureStopCompleted: (
-    restore: boolean,
-  ) => void;
-  save: (options: object) => Promise<VideoSaveData>;
-  setVolume: (volume: number) => void;
-  getCurrentPosition: () => Promise<number>;
-  setFullScreen: (fullScreen: boolean) => void;
-}
 
 const Video = forwardRef<VideoRef, ReactVideoProps>(
   (

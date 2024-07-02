@@ -3,7 +3,7 @@
     "version": "6.3.0",
     "description": "A <Video /> element for react-native",
     "main": "lib/index",
-    "source": "src/index",
+    "source": "src/index.ts",
     "react-native": "src/index",
     "license": "MIT",
     "author": "Community Contributors",

@@ -8,6 +8,7 @@ import type {
   Int32,
   WithDefault,
 } from 'react-native/Libraries/Types/CodegenTypes';
+import type {VideoSaveData} from '../types/video-ref';
 
 // -------- There are types for native component (future codegen) --------
 // if you are looking for types for react component, see src/types/video.ts
@@ -266,12 +267,12 @@ type OnReceiveAdEventData = Readonly<{
 
 export type OnVideoErrorData = Readonly<{
   error: Readonly<{
-    errorString?: string; // android
+    errorString?: string; // android | web
     errorException?: string; // android
     errorStackTrace?: string; // android
     errorCode?: string; // android
     error?: string; // ios
-    code?: Int32; // ios
+    code?: Int32; // ios | web
     localizedDescription?: string; // ios
     localizedFailureReason?: string; // ios
     localizedRecoverySuggestion?: string; // ios
@@ -374,10 +375,6 @@ export interface VideoNativeProps extends ViewProps {
 }
 
 export type VideoComponentType = HostComponent<VideoNativeProps>;
-
-export type VideoSaveData = {
-  uri: string;
-};
 
 export interface VideoManagerType {
   save: (option: object, reactTag: number) => Promise<VideoSaveData>;

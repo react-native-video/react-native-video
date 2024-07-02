@@ -1,5 +1,4 @@
-import {AppRegistry} from 'react-native';
+import {registerRootComponent} from 'expo';
 import VideoPlayer from './VideoPlayer';
-import {name as appName} from '../app.json';
 
-AppRegistry.registerComponent(appName, () => VideoPlayer);
+registerRootComponent(VideoPlayer);
