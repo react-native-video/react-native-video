@@ -9,7 +9,7 @@ import React
 // MARK: - RCTVideo
 
 class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverHandler {
-    private var _player: AVPlayer?
+    private(set) var _player: AVPlayer?
     private var _playerItem: AVPlayerItem?
     private var _source: VideoSource?
     private var _playerLayer: AVPlayerLayer?
@@ -35,7 +35,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _controls = false
 
     /* Keep track of any modifiers, need to be applied after each play */
-    private var _audioOutput: String = "speaker"
+    private(set) var _audioOutput: String = "speaker"
     private var _volume: Float = 1.0
     private var _rate: Float = 1.0
     private var _maxBitRate: Float?
@@ -50,12 +50,12 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _selectedTextTrackCriteria: SelectedTrackCriteria?
     private var _selectedAudioTrackCriteria: SelectedTrackCriteria?
     private var _playbackStalled = false
-    private var _playInBackground = false
+    private(set) var _playInBackground = false
     private var _preventsDisplaySleepDuringVideoPlayback = true
     private var _preferredForwardBufferDuration: Float = 0.0
     private var _playWhenInactive = false
-    private var _ignoreSilentSwitch: String! = "inherit" // inherit, ignore, obey
-    private var _mixWithOthers: String! = "inherit" // inherit, mix, duck
+    private(set) var _ignoreSilentSwitch: String! = "inherit" // inherit, ignore, obey
+    private(set) var _mixWithOthers: String! = "inherit" // inherit, mix, duck
     private var _resizeMode: String! = "cover"
     private var _fullscreen = false
     private var _fullscreenAutorotate = true
@@ -66,7 +66,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _filterEnabled = false
     private var _presentingViewController: UIViewController?
     private var _startPosition: Float64 = -1
-    private var _showNotificationControls = false
+    private(set) var _showNotificationControls = false
     private var _pictureInPictureEnabled = false {
         didSet {
             #if os(iOS)
@@ -192,6 +192,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         #endif
 
         _eventDispatcher = eventDispatcher
+        AudioSessionManager.shared.registerView(view: self)
 
         #if os(iOS)
             if _pictureInPictureEnabled {
@@ -244,6 +245,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        AudioSessionManager.shared.registerView(view: self)
         #if USE_GOOGLE_IMA
             _imaAdsManager = RCTIMAAdsManager(video: self, pipEnabled: isPipEnabled)
         #endif
@@ -261,6 +263,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
         if let player = _player {
             NowPlayingInfoCenterManager.shared.removePlayer(player: player)
+            AudioSessionManager.shared.removePlayer(view: self)
         }
 
         #if os(iOS)
@@ -550,6 +553,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                         }
                     }
                 }
+
+                AudioSessionManager.shared.updateAudioSessionCategory()
             }
 
             self._videoLoadStarted = true
@@ -659,6 +664,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc
     func setPlayInBackground(_ playInBackground: Bool) {
         _playInBackground = playInBackground
+        AudioSessionManager.shared.updateAudioSessionCategory()
     }
 
     @objc
@@ -683,17 +689,13 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc
     func setPictureInPicture(_ pictureInPicture: Bool) {
         #if os(iOS)
-            let audioSession = AVAudioSession.sharedInstance()
-            do {
-                try audioSession.setCategory(.playback)
-                try audioSession.setActive(true, options: [])
-            } catch {}
             if pictureInPicture {
                 _pictureInPictureEnabled = true
             } else {
                 _pictureInPictureEnabled = false
             }
             _pip?.setPictureInPicture(pictureInPicture)
+            AudioSessionManager.shared.updateAudioSessionCategory()
         #endif
     }
 
@@ -711,7 +713,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc
     func setIgnoreSilentSwitch(_ ignoreSilentSwitch: String?) {
         _ignoreSilentSwitch = ignoreSilentSwitch
-        RCTPlayerOperations.configureAudio(ignoreSilentSwitch: _ignoreSilentSwitch, mixWithOthers: _mixWithOthers, audioOutput: _audioOutput)
+        AudioSessionManager.shared.updateAudioSessionCategory()
         applyModifiers()
     }
 
@@ -733,7 +735,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                 _player?.rate = 0.0
             }
         } else {
-            RCTPlayerOperations.configureAudio(ignoreSilentSwitch: _ignoreSilentSwitch, mixWithOthers: _mixWithOthers, audioOutput: _audioOutput)
+            AudioSessionManager.shared.updateAudioSessionCategory()
 
             if _adPlaying {
                 #if USE_GOOGLE_IMA
@@ -815,18 +817,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc
     func setAudioOutput(_ audioOutput: String) {
         _audioOutput = audioOutput
-        RCTPlayerOperations.configureAudio(ignoreSilentSwitch: _ignoreSilentSwitch, mixWithOthers: _mixWithOthers, audioOutput: _audioOutput)
-        do {
-            if audioOutput == "speaker" {
-                #if os(iOS) || os(visionOS)
-                    try AVAudioSession.sharedInstance().overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
-                #endif
-            } else if audioOutput == "earpiece" {
-                try AVAudioSession.sharedInstance().overrideOutputAudioPort(AVAudioSession.PortOverride.none)
-            }
-        } catch {
-            print("Error occurred: \(error.localizedDescription)")
-        }
+        AudioSessionManager.shared.updateAudioSessionCategory()
     }
 
     @objc

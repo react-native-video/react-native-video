@@ -22,12 +22,12 @@ class NowPlayingInfoCenterManager {
     private var receivingRemoveControlEvents = false {
         didSet {
             if receivingRemoveControlEvents {
-                try? AVAudioSession.sharedInstance().setCategory(.playback)
-                try? AVAudioSession.sharedInstance().setActive(true)
                 UIApplication.shared.beginReceivingRemoteControlEvents()
             } else {
                 UIApplication.shared.endReceivingRemoteControlEvents()
             }
+
+            AudioSessionManager.shared.updateAudioSessionCategory()
         }
     }
 
