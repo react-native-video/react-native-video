@@ -900,9 +900,12 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             setMaxBitRate(_maxBitRate)
         }
 
+        if _selectedTextTrackCriteria != nil {
+            setSelectedTextTrack(_selectedTextTrackCriteria)
+        }
+
         setAudioOutput(_audioOutput)
         setSelectedAudioTrack(_selectedAudioTrackCriteria)
-        setSelectedTextTrack(_selectedTextTrackCriteria)
         setResizeMode(_resizeMode)
         setRepeat(_repeat)
         setControls(_controls)
