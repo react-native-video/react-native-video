@@ -13,6 +13,8 @@
 		0177D39D27170A7A00F5BE18 /* RCTVideoPlayerViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0177D39627170A7A00F5BE18 /* RCTVideoPlayerViewControllerDelegate.swift */; };
 		0177D39E27170A7A00F5BE18 /* RCTVideoManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0177D39727170A7A00F5BE18 /* RCTVideoManager.m */; };
 		0177D39F27170A7A00F5BE18 /* RCTVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0177D39927170A7A00F5BE18 /* RCTVideo.swift */; };
+		2EDE6F9C2C3424F600CACCEE /* RNCVideoComponentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2EDE6F9B2C3424F600CACCEE /* RNCVideoComponentView.mm */; };
+		2EDE6F9D2C3424F600CACCEE /* RNCVideoComponentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2EDE6F9B2C3424F600CACCEE /* RNCVideoComponentView.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,6 +51,11 @@
 		0177D39827170A7A00F5BE18 /* RCTVideo-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RCTVideo-Bridging-Header.h"; path = "Video/RCTVideo-Bridging-Header.h"; sourceTree = "<group>"; };
 		0177D39927170A7A00F5BE18 /* RCTVideo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RCTVideo.swift; path = Video/RCTVideo.swift; sourceTree = "<group>"; };
 		134814201AA4EA6300B7C361 /* libRCTVideo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTVideo.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2EDE6F972C34242900CACCEE /* RNCVideoComponentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNCVideoComponentView.h; sourceTree = "<group>"; };
+		2EDE6F9B2C3424F600CACCEE /* RNCVideoComponentView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RNCVideoComponentView.mm; sourceTree = "<group>"; };
+		2EDE6F9E2C34267A00CACCEE /* RCTVideo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTVideo.h; sourceTree = "<group>"; };
+		2EDE6F9F2C34284000CACCEE /* RCTVideoPlayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTVideoPlayerViewController.h; sourceTree = "<group>"; };
+		2EDE6FA02C34286200CACCEE /* RCTVideoPlayerViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTVideoPlayerViewControllerDelegate.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +84,26 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		2EDE6F952C3423B600CACCEE /* Fabric */ = {
+			isa = PBXGroup;
+			children = (
+				2EDE6F962C3423DD00CACCEE /* Video */,
+			);
+			path = Fabric;
+			sourceTree = "<group>";
+		};
+		2EDE6F962C3423DD00CACCEE /* Video */ = {
+			isa = PBXGroup;
+			children = (
+				2EDE6F972C34242900CACCEE /* RNCVideoComponentView.h */,
+				2EDE6F9B2C3424F600CACCEE /* RNCVideoComponentView.mm */,
+				2EDE6F9E2C34267A00CACCEE /* RCTVideo.h */,
+				2EDE6F9F2C34284000CACCEE /* RCTVideoPlayerViewController.h */,
+				2EDE6FA02C34286200CACCEE /* RCTVideoPlayerViewControllerDelegate.h */,
+			);
+			path = Video;
+			sourceTree = "<group>";
+		};
 		49E995712048B4CE00EA7890 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -87,6 +114,7 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				2EDE6F952C3423B600CACCEE /* Fabric */,
 				01489050272001A100E69940 /* DataStructures */,
 				01489051272001A100E69940 /* Features */,
 				0177D39527170A7A00F5BE18 /* RCTSwiftLog */,
@@ -186,6 +214,7 @@
 			files = (
 				0177D39D27170A7A00F5BE18 /* RCTVideoPlayerViewControllerDelegate.swift in Sources */,
 				0177D39C27170A7A00F5BE18 /* RCTVideoPlayerViewController.swift in Sources */,
+				2EDE6F9C2C3424F600CACCEE /* RNCVideoComponentView.mm in Sources */,
 				0177D39B27170A7A00F5BE18 /* UIView+FindUIViewController.swift in Sources */,
 				0177D39F27170A7A00F5BE18 /* RCTVideo.swift in Sources */,
 				0177D39E27170A7A00F5BE18 /* RCTVideoManager.m in Sources */,
@@ -197,6 +226,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2EDE6F9D2C3424F600CACCEE /* RNCVideoComponentView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

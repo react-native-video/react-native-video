@@ -7,7 +7,7 @@ import Foundation
 import React
 
 // MARK: - RCTVideo
-
+@objc(RCTVideo)
 class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverHandler {
     private var _player: AVPlayer?
     private var _playerItem: AVPlayerItem?
