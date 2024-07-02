@@ -758,8 +758,10 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         let seekTime: NSNumber! = info["time"] as! NSNumber
         let seekTolerance: NSNumber! = info["tolerance"] as! NSNumber
         let item: AVPlayerItem? = _player?.currentItem
+
+        _pendingSeek = true
+
         guard item != nil, let player = _player, let item, item.status == AVPlayerItem.Status.readyToPlay else {
-            _pendingSeek = true
             _pendingSeekTime = seekTime.floatValue
             return
         }
@@ -1486,7 +1488,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
         guard _isPlaying != isPlaying else { return }
         _isPlaying = isPlaying
-        onVideoPlaybackStateChanged?(["isPlaying": isPlaying, "target": reactTag as Any])
+        onVideoPlaybackStateChanged?(["isPlaying": isPlaying, "isSeeking": self._pendingSeek == true, "target": reactTag as Any])
     }
 
     func handlePlaybackRateChange(player: AVPlayer, change: NSKeyValueObservedChange<Float>) {

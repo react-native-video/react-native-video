@@ -345,9 +345,10 @@ public class VideoEventEmitter {
         receiveEvent(EVENT_BUFFER, map);
     }
 
-    public void playbackStateChanged(boolean isPlaying) {
+    public void playbackStateChanged(boolean isPlaying, boolean isSeeking) {
         WritableMap map = Arguments.createMap();
         map.putBoolean(EVENT_PROP_IS_PLAYING, isPlaying);
+        map.putBoolean("isSeeking", isSeeking);
         receiveEvent(EVENT_PLAYBACK_STATE_CHANGED, map);
     }
 

@@ -296,15 +296,17 @@ Callback function that is called when the playback state changes.
 
 Payload:
 
-| Property  | Type        | Description                                       |
-| --------- | ----------- | ------------------------------------------------- |
-| isPlaying | boolean     | Boolean indicating if the media is playing or not |
+| Property  | Type        | Description                                        |
+| --------- | ----------- | -------------------------------------------------- |
+| isPlaying | boolean     | Boolean indicating if the media is playing or not  |
+| isSeeking | boolean     | Boolean indicating if the player is seeking or not |
 
 Example:
 
 ```javascript
 {
   isPlaying: true,
+  isSeeking: false
 }
 ```
 
