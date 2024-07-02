@@ -30,73 +30,59 @@ class RCTVideoManager: RCTViewManager {
         }
     }
 
-    @objc(save:reactTag:resolver:rejecter:)
-    func save(options: NSDictionary, reactTag: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(seek:time:tolerance:)
+    func seek(_ reactTag: NSNumber, time: NSNumber, tolerance: NSNumber) {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.save(options: options, resolve: resolve, reject: reject)
+            videoView?.setSeek(time, tolerance)
         })
     }
 
-    @objc(seek:reactTag:)
-    func seek(info: NSDictionary, reactTag: NSNumber) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setSeek(info)
-        })
-    }
-
-    @objc(setLicenseResult:licenseUrl:reactTag:)
-    func setLicenseResult(license: NSString, licenseUrl: NSString, reactTag: NSNumber) {
+    @objc(setLicenseResult:license:licenseUrl:)
+    func setLicenseResult(_ reactTag: NSNumber, license: NSString, licenseUrl: NSString) {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
             videoView?.setLicenseResult(license as String, licenseUrl as String)
         })
     }
 
-    @objc(setLicenseResultError:licenseUrl:reactTag:)
-    func setLicenseResultError(error: NSString, licenseUrl: NSString, reactTag: NSNumber) {
+    @objc(setLicenseResultError:error:licenseUrl:)
+    func setLicenseResultError(_ reactTag: NSNumber, error: NSString, licenseUrl: NSString) {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
             videoView?.setLicenseResultError(error as String, licenseUrl as String)
         })
     }
 
-    @objc(dismissFullscreenPlayer:)
-    func dismissFullscreenPlayer(_ reactTag: NSNumber) {
+    @objc(setPlayerPauseState:paused:)
+    func setPlayerPauseState(_ reactTag: NSNumber, paused: Bool) {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.dismissFullscreenPlayer()
+            videoView?.setPaused(paused)
         })
     }
 
-    @objc(presentFullscreenPlayer:)
-    func presentFullscreenPlayer(_ reactTag: NSNumber) {
+    @objc(setVolumeCMD:volume:)
+    func setVolumeCMD(_ reactTag: NSNumber, volume: Float) {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.presentFullscreenPlayer()
+            videoView?.setVolume(volume)
         })
     }
 
-    @objc(setPlayerPauseState:reactTag:)
-    func setPlayerPauseState(paused: NSNumber, reactTag: NSNumber) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setPaused(paused.boolValue)
-        })
-    }
-
-    @objc(setVolume:reactTag:)
-    func setVolume(value: Float, reactTag: NSNumber) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setVolume(value)
-        })
-    }
-
-    @objc(getCurrentPosition:resolver:rejecter:)
-    func getCurrentPosition(reactTag: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.getCurrentPlaybackTime(resolve, reject)
-        })
-    }
-
-    @objc(setFullScreen:reactTag:)
-    func setFullScreen(fullScreen: Bool, reactTag: NSNumber) {
+    @objc(setFullScreen:fullscreen:)
+    func setFullScreen(_ reactTag: NSNumber, fullScreen: Bool) {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
             videoView?.setFullscreen(fullScreen)
+        })
+    }
+
+    @objc(save:options:resolve:reject:)
+    func save(_ reactTag: NSNumber, options: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        performOnVideoView(withReactTag: reactTag, callback: { videoView in
+            videoView?.save(options, resolve, reject)
+        })
+    }
+
+    @objc(getCurrentPosition:resolve:reject:)
+    func getCurrentPosition(_ reactTag: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        performOnVideoView(withReactTag: reactTag, callback: { videoView in
+            videoView?.getCurrentPlaybackTime(resolve, reject)
         })
     }
 

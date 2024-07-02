@@ -1,5 +1,5 @@
 #import "React/RCTViewManager.h"
-#import <React/RCTBridge.h>
+#import <React/RCTBridgeModule.h>
 
 @interface RCT_EXTERN_MODULE (RCTVideoManager, RCTViewManager)
 
@@ -68,31 +68,21 @@ RCT_EXPORT_VIEW_PROPERTY(onTextTracks, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onAudioTracks, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onTextTrackDataChanged, RCTDirectEventBlock);
 
+RCT_EXTERN_METHOD(seek : (nonnull NSNumber*)reactTag time : (nonnull NSNumber*)time tolerance : (nonnull NSNumber*)tolerance)
+RCT_EXTERN_METHOD(setLicenseResult : (nonnull NSNumber*)reactTag lisence : (NSString*)license licenseUrl : (NSString*)licenseUrl)
+RCT_EXTERN_METHOD(setLicenseResultError : (nonnull NSNumber*)reactTag error : (NSString*)error licenseUrl : (NSString*)licenseUrl)
+RCT_EXTERN_METHOD(setPlayerPauseState : (nonnull NSNumber*)reactTag paused : (nonnull BOOL)paused)
+RCT_EXTERN_METHOD(setVolumeCMD : (nonnull NSNumber*)reactTag volume : (nonnull float*)volume)
+RCT_EXTERN_METHOD(setFullScreen : (nonnull NSNumber*)reactTag fullscreen : (nonnull BOOL)fullScreen)
+
 RCT_EXTERN_METHOD(save
-                  : (NSDictionary*)options reactTag
-                  : (nonnull NSNumber*)reactTag resolver
-                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (nonnull NSNumber*)reactTag options
+                  : (NSDictionary*)options resolve
+                  : (RCTPromiseResolveBlock)resolve reject
                   : (RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(seek : (NSDictionary*)info reactTag : (nonnull NSNumber*)reactTag)
-
-RCT_EXTERN_METHOD(setLicenseResult : (NSString*)license licenseUrl : (NSString*)licenseUrl reactTag : (nonnull NSNumber*)reactTag)
-
-RCT_EXTERN_METHOD(setLicenseResultError : (NSString*)error licenseUrl : (NSString*)licenseUrl reactTag : (nonnull NSNumber*)reactTag)
-
-RCT_EXTERN_METHOD(setPlayerPauseState : (nonnull NSNumber*)paused reactTag : (nonnull NSNumber*)reactTag)
-
-RCT_EXTERN_METHOD(presentFullscreenPlayer : (nonnull NSNumber*)reactTag)
-
-RCT_EXTERN_METHOD(dismissFullscreenPlayer : (nonnull NSNumber*)reactTag)
-
-RCT_EXTERN_METHOD(setVolume : (nonnull float*)volume reactTag : (nonnull NSNumber*)reactTag)
-
 RCT_EXTERN_METHOD(getCurrentPosition
-                  : (nonnull NSNumber*)reactTag resolver
-                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (nonnull NSNumber*)reactTag resolve
+                  : (RCTPromiseResolveBlock)resolve reject
                   : (RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(setFullScreen : (BOOL)fullScreen reactTag : (nonnull NSNumber*)reactTag)
 
 @end

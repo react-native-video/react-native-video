@@ -49,6 +49,8 @@
 		0177D39827170A7A00F5BE18 /* RCTVideo-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RCTVideo-Bridging-Header.h"; path = "Video/RCTVideo-Bridging-Header.h"; sourceTree = "<group>"; };
 		0177D39927170A7A00F5BE18 /* RCTVideo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RCTVideo.swift; path = Video/RCTVideo.swift; sourceTree = "<group>"; };
 		134814201AA4EA6300B7C361 /* libRCTVideo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTVideo.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		61E605932C30612C0080E2CD /* RCTDecoderPropertiesModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RCTDecoderPropertiesModule.h; path = Video/RCTDecoderPropertiesModule.h; sourceTree = "<group>"; };
+		61E605942C30616C0080E2CD /* RCTDecoderPropertiesModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RCTDecoderPropertiesModule.m; path = Video/RCTDecoderPropertiesModule.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,8 @@
 				0177D39927170A7A00F5BE18 /* RCTVideo.swift */,
 				0177D39727170A7A00F5BE18 /* RCTVideoManager.m */,
 				0177D39227170A7A00F5BE18 /* RCTVideoManager.swift */,
+				61E605932C30612C0080E2CD /* RCTDecoderPropertiesModule.h */,
+				61E605942C30616C0080E2CD /* RCTDecoderPropertiesModule.m */,
 				0177D39427170A7A00F5BE18 /* RCTVideoPlayerViewController.swift */,
 				0177D39627170A7A00F5BE18 /* RCTVideoPlayerViewControllerDelegate.swift */,
 				0177D39327170A7A00F5BE18 /* UIView+FindUIViewController.swift */,

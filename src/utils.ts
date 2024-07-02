@@ -43,6 +43,10 @@ export function resolveAssetSourceForVideo(
   return source as ReactVideoSourceProperties;
 }
 
+/**
+ * @deprecated
+ * Do not use this fn anymore. "findNodeHandle" will be deprecated.
+ * */
 export function getReactTag(
   ref: RefObject<
     | Component<unknown, unknown, unknown>

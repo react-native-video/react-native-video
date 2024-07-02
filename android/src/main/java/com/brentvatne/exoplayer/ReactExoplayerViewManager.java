@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.media3.common.util.Util;
 
 import com.brentvatne.common.api.BufferConfig;
 import com.brentvatne.common.api.BufferingStrategy;
@@ -22,6 +21,7 @@ import com.brentvatne.common.react.VideoEventEmitter;
 import com.brentvatne.common.toolbox.DebugLog;
 import com.brentvatne.common.toolbox.ReactBridgeUtils;
 import com.brentvatne.react.ReactNativeVideoManager;
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
@@ -29,9 +29,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -42,7 +40,6 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_SRC = "src";
     private static final String PROP_AD_TAG_URL = "adTagUrl";
     private static final String PROP_DRM = "drm";
-    private static final String PROP_SRC_HEADERS = "requestHeaders";
     private static final String PROP_RESIZE_MODE = "resizeMode";
     private static final String PROP_REPEAT = "repeat";
     private static final String PROP_SELECTED_AUDIO_TRACK = "selectedAudioTrack";
@@ -82,6 +79,10 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_DEBUG = "debug";
     private static final String PROP_CONTROLS_STYLES = "controlsStyles";
 
+    private static final String CMD_SET_PLAYER_PAUSE_STATE = "setPlayerPauseState";
+    private static final String CMD_SEEK = "seek";
+    private static final String CMD_SET_VOLUME = "setVolumeCMD";
+    private static final String CMD_SET_FULLSCREEN = "setFullScreen";
 
     private final ReactExoplayerConfig config;
 
@@ -354,5 +355,42 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     public void setControlsStyles(final ReactExoplayerView videoView, @Nullable ReadableMap controlsStyles) {
         ControlsConfig controlsConfig = ControlsConfig.parse(controlsStyles);
         videoView.setControlsStyles(controlsConfig);
+    }
+
+    @Override
+    public void receiveCommand(@NonNull ReactExoplayerView videoView, String commandId, @Nullable ReadableArray args) {
+        switch (commandId) {
+            case CMD_SET_PLAYER_PAUSE_STATE:
+                if (args == null || args.size() < 1) {
+                    throw new JSApplicationIllegalArgumentException("Illegal number of arguments for '" + CMD_SET_PLAYER_PAUSE_STATE + "' command");
+                }
+                Boolean paused = args.getBoolean(0);
+                videoView.setPausedModifier(paused);
+                break;
+            case CMD_SEEK:
+                if (args == null || args.size() < 1) {
+                    throw new JSApplicationIllegalArgumentException("Illegal number of arguments for '" + CMD_SEEK + "' command");
+                }
+                Double time = args.getDouble(0);
+                videoView.seekTo((Long)Math.round(time * 1000f));
+                break;
+            case CMD_SET_VOLUME:
+                if (args == null || args.size() < 1) {
+                    throw new JSApplicationIllegalArgumentException("Illegal number of arguments for '" + CMD_SET_VOLUME + "' command");
+                }
+                Float volume = (float) args.getDouble(0);
+                videoView.setVolumeModifier(volume);
+                break;
+            case CMD_SET_FULLSCREEN:
+                if (args == null || args.size() < 1) {
+                    throw new JSApplicationIllegalArgumentException("Illegal number of arguments for '" + CMD_SET_FULLSCREEN + "' command");
+                }
+                boolean fullscreen = args.getBoolean(0);
+                videoView.setFullscreen(fullscreen);
+                break;
+            default:
+                break;
+        }
+        super.receiveCommand(videoView, commandId, args);
     }
 }

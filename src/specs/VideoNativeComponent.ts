@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import type {HostComponent, ViewProps} from 'react-native';
-import {NativeModules, requireNativeComponent} from 'react-native';
 import type {
   DirectEventHandler,
   Double,
@@ -8,6 +7,8 @@ import type {
   Int32,
   WithDefault,
 } from 'react-native/Libraries/Types/CodegenTypes';
+import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
 // -------- There are types for native component (future codegen) --------
 // if you are looking for types for react component, see src/types/video.ts
@@ -87,11 +88,6 @@ type SelectedVideoTrackType = WithDefault<string, 'auto'>;
 type SelectedVideoTrack = Readonly<{
   type?: SelectedVideoTrackType;
   value?: string;
-}>;
-
-export type Seek = Readonly<{
-  time: Float;
-  tolerance?: Float;
 }>;
 
 type BufferConfigLive = Readonly<{
@@ -286,7 +282,7 @@ export type OnAudioFocusChangedData = Readonly<{
 
 type ControlsStyles = Readonly<{
   hideSeekBar?: boolean;
-  seekIncrementMS?: number;
+  seekIncrementMS?: Int32;
 }>;
 
 export type OnControlsVisibilityChange = Readonly<{
@@ -373,45 +369,47 @@ export interface VideoNativeProps extends ViewProps {
   onVideoTracks?: DirectEventHandler<OnVideoTracksData>; // android
 }
 
-export type VideoComponentType = HostComponent<VideoNativeProps>;
+type NativeVideoComponentType = HostComponent<VideoNativeProps>;
 
-export type VideoSaveData = {
-  uri: string;
-};
-
-export interface VideoManagerType {
-  save: (option: object, reactTag: number) => Promise<VideoSaveData>;
-  seek: (option: Seek, reactTag: number) => Promise<void>;
-  setPlayerPauseState: (paused: boolean, reactTag: number) => Promise<void>;
+export interface NativeVideoCommands {
+  seek: (
+    viewRef: React.ElementRef<NativeVideoComponentType>,
+    time: Float,
+    tolerance?: Float,
+  ) => void;
+  setPlayerPauseState: (
+    viewRef: React.ElementRef<NativeVideoComponentType>,
+    paused: boolean,
+  ) => void;
+  setVolumeCMD: (
+    viewRef: React.ElementRef<NativeVideoComponentType>,
+    volume: Float,
+  ) => void;
+  setFullScreen: (
+    viewRef: React.ElementRef<NativeVideoComponentType>,
+    fullScreen: boolean,
+  ) => void;
   setLicenseResult: (
+    viewRef: React.ElementRef<NativeVideoComponentType>,
     result: string,
     licenseUrl: string,
-    reactTag: number,
-  ) => Promise<void>;
+  ) => void;
   setLicenseResultError: (
+    viewRef: React.ElementRef<NativeVideoComponentType>,
     error: string,
     licenseUrl: string,
-    reactTag: number,
-  ) => Promise<void>;
-  setVolume: (volume: number, reactTag: number) => Promise<void>;
-  getCurrentPosition: (reactTag: number) => Promise<number>;
-  setFullScreen: (fullScreen: boolean, reactTag: number) => Promise<void>;
+  ) => void;
 }
 
-export interface VideoDecoderPropertiesType {
-  getWidevineLevel: () => Promise<number>;
-  isCodecSupported: (
-    mimeType: string,
-    width: number,
-    height: number,
-  ) => Promise<'unsupported' | 'hardware' | 'software'>;
-  isHEVCSupported: () => Promise<'unsupported' | 'hardware' | 'software'>;
-}
+export const Commands = codegenNativeCommands<NativeVideoCommands>({
+  supportedCommands: [
+    'seek',
+    'setPlayerPauseState',
+    'setVolumeCMD',
+    'setFullScreen',
+    'setLicenseResult',
+    'setLicenseResultError',
+  ],
+});
 
-export const VideoManager = NativeModules.VideoManager as VideoManagerType;
-export const VideoDecoderProperties =
-  NativeModules.VideoDecoderProperties as VideoDecoderPropertiesType;
-
-export default requireNativeComponent<VideoNativeProps>(
-  'RCTVideo',
-) as VideoComponentType;
+export default codegenNativeComponent<VideoNativeProps>('RCTVideo');
