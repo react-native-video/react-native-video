@@ -287,6 +287,7 @@ export type OnAudioFocusChangedData = Readonly<{
 type ControlsStyles = Readonly<{
   hideSeekBar?: boolean;
   seekIncrementMS?: number;
+  showSubtitleButton?: boolean;
 }>;
 
 export type OnControlsVisibilityChange = Readonly<{

@@ -1,6 +1,5 @@
 package com.brentvatne.exoplayer;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Handler;
@@ -8,26 +7,25 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.media3.ui.LegacyPlayerControlView;
+import androidx.media3.ui.PlayerControlView;
+import androidx.media3.ui.PlayerView;
 
 import com.brentvatne.common.toolbox.DebugLog;
 
 import java.lang.ref.WeakReference;
 
-@SuppressLint("PrivateResource")
 public class FullScreenPlayerView extends Dialog {
-    private final LegacyPlayerControlView playerControlView;
+    private final PlayerControlView playerControlView;
     private final ExoPlayerView exoPlayerView;
     private final ReactExoplayerView reactExoplayerView;
     private ViewGroup parent;
     private final FrameLayout containerView;
-    private final OnBackPressedCallback onBackPressedCallback;
     private final Handler mKeepScreenOnHandler;
     private final Runnable mKeepScreenOnUpdater;
-
+    private final OnBackPressedCallback onBackPressedCallback;
     private static class KeepScreenOnUpdater implements Runnable {
         private final static long UPDATE_KEEP_SCREEN_ON_FLAG_MS = 200;
         private final WeakReference<FullScreenPlayerView> mFullscreenPlayer;
@@ -59,7 +57,7 @@ public class FullScreenPlayerView extends Dialog {
         }
     }
 
-    public FullScreenPlayerView(Context context, ExoPlayerView exoPlayerView, ReactExoplayerView reactExoplayerView, LegacyPlayerControlView playerControlView, OnBackPressedCallback onBackPressedCallback) {
+    public FullScreenPlayerView(Context context, ExoPlayerView exoPlayerView, ReactExoplayerView reactExoplayerView, PlayerControlView playerControlView, OnBackPressedCallback onBackPressedCallback) {
         super(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         this.playerControlView = playerControlView;
         this.exoPlayerView = exoPlayerView;
@@ -67,32 +65,26 @@ public class FullScreenPlayerView extends Dialog {
         this.onBackPressedCallback = onBackPressedCallback;
         containerView = new FrameLayout(context);
         setContentView(containerView, generateDefaultLayoutParams());
-
         mKeepScreenOnUpdater = new KeepScreenOnUpdater(this);
         mKeepScreenOnHandler = new Handler();
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        ImageView exoFullScreen = findViewById(androidx.media3.ui.R.id.exo_fullscreen);
+        if(exoFullScreen != null){
+            exoFullScreen.performClick();
+        }
         onBackPressedCallback.handleOnBackPressed();
+        super.onBackPressed();
     }
 
     @Override
     protected void onStart() {
         parent = (FrameLayout)(exoPlayerView.getParent());
-
         parent.removeView(exoPlayerView);
         containerView.addView(exoPlayerView, generateDefaultLayoutParams());
-
-        if (playerControlView != null) {
-            ImageButton imageButton = playerControlView.findViewById(com.brentvatne.react.R.id.exo_fullscreen);
-            imageButton.setImageResource(androidx.media3.ui.R.drawable.exo_icon_fullscreen_exit);
-            imageButton.setContentDescription(getContext().getString(androidx.media3.ui.R.string.exo_controls_fullscreen_exit_description));
-            parent.removeView(playerControlView);
-            containerView.addView(playerControlView, generateDefaultLayoutParams());
-        }
-
+        setupFullscreenButtonListener();
         super.onStart();
     }
 
@@ -101,25 +93,14 @@ public class FullScreenPlayerView extends Dialog {
         mKeepScreenOnHandler.removeCallbacks(mKeepScreenOnUpdater);
         containerView.removeView(exoPlayerView);
         parent.addView(exoPlayerView, generateDefaultLayoutParams());
-
-        if (playerControlView != null) {
-            ImageButton imageButton = playerControlView.findViewById(com.brentvatne.react.R.id.exo_fullscreen);
-            imageButton.setImageResource(androidx.media3.ui.R.drawable.exo_icon_fullscreen_enter);
-            imageButton.setContentDescription(getContext().getString(androidx.media3.ui.R.string.exo_controls_fullscreen_enter_description));
-            containerView.removeView(playerControlView);
-            parent.addView(playerControlView, generateDefaultLayoutParams());
-        }
-
         parent.requestLayout();
         parent = null;
-
         super.onStop();
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-
         if (reactExoplayerView.getPreventsDisplaySleepDuringVideoPlayback()) {
             mKeepScreenOnHandler.post(mKeepScreenOnUpdater);
         }
@@ -132,5 +113,16 @@ public class FullScreenPlayerView extends Dialog {
         );
         layoutParams.setMargins(0, 0, 0, 0);
         return layoutParams;
+    }
+
+    private void setupFullscreenButtonListener() {
+        if (playerControlView != null) {
+            exoPlayerView.setFullscreenButtonClickListener(new PlayerView.FullscreenButtonClickListener() {
+                @Override
+                public void onFullscreenButtonClick(boolean isFullScreen) {
+                    reactExoplayerView.setFullscreen(isFullScreen);
+                }
+            });
+        }
     }
 }

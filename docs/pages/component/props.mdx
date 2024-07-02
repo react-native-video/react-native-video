@@ -145,10 +145,11 @@ If needed, you can also add your controls or use a package like [react-native-vi
 
 Adjust the control styles. This prop is need only if `controls={true}` and is an object. See the list of prop supported below.
 
-| Property        | Type    | Description                                                                             |
-|-----------------|---------|-----------------------------------------------------------------------------------------|
-| hideSeekBar     | boolean | The default value is `false`, allowing you to hide the seek bar for live broadcasts.    |
-| seekIncrementMS | number  | The default value is `10000`. You can change the value to increment forward and rewind. |
+| Property           | Type    | Description                                                                                                                                     |
+|--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| hideSeekBar        | boolean | The default value is `false`, allowing you to hide the seek bar for live broadcasts.                                                            |
+| seekIncrementMS    | number  | The default value is `10000`. You can change the value to increment forward and rewind.                                                         |
+| showSubtitleButton | boolean | The default value is `true`, allowing you to show or hide the subtitle button. If the video does not have subtitles, we don't show this button. |
 
 Example with default values:
 
@@ -156,6 +157,7 @@ Example with default values:
 controlsStyles={{
   hideSeekBar: false,
   seekIncrementMS: 10000,
+  showSubtitleButton: true,
 }}
 ```
 
@@ -271,6 +273,9 @@ Whether this video view should be focusable with a non-touch input device, eg. r
 
 Controls whether the player enters fullscreen on play.
 See [presentFullscreenPlayer](#presentfullscreenplayer) for details.
+
+> [!WARNING]
+> deprecated, use setFullScreen method instead
 
 - **false (default)** - Don't display the video in fullscreen
 - **true** - Display the video in fullscreen

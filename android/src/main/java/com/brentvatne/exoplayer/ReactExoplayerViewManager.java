@@ -297,7 +297,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
 
     @ReactProp(name = PROP_FULLSCREEN, defaultBoolean = false)
     public void setFullscreen(final ReactExoplayerView videoView, final boolean fullscreen) {
-        videoView.setFullscreen(fullscreen);
+        videoView.updateFullScreenProp();
     }
 
     @ReactProp(name = PROP_VIEW_TYPE, defaultInt = ViewType.VIEW_TYPE_SURFACE)
